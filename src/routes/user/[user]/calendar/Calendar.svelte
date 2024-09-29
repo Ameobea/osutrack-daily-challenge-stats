@@ -1,16 +1,20 @@
+<script lang="ts" context="module">
+  const zeroPad = (num: number) => num.toString().padStart(2, '0');
+</script>
+
 <script lang="ts">
   import calendarize from 'calendarize';
 
   import type { DailyChallengeHistoryEntry } from '../../../../api';
   import CalendarCell from './CalendarCell.svelte';
+  import { dayIDToDate } from '../../../../util';
 
   export let statsByDayID: Record<number, DailyChallengeHistoryEntry>;
   export let selectedDayID: number | null;
   export let setSelectedDayID: (dayID: number) => void;
 
-  const zeroPad = (num: number) => num.toString().padStart(2, '0');
-
-  const now = new Date();
+  const initialSelectedDayID = selectedDayID;
+  const now = initialSelectedDayID ? dayIDToDate(initialSelectedDayID) : new Date();
   let curYear = now.getFullYear();
   let curMonth = now.getMonth();
 
@@ -27,8 +31,10 @@
         curYear -= 1;
       }
       calendarGrid = calendarize(new Date(`${curYear}-${curMonth + 1}-01`));
-    }}>Previous</button
+    }}
   >
+    Previous
+  </button>
 
   <h1>
     {new Date(curYear, curMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
@@ -43,8 +49,10 @@
         curYear += 1;
       }
       calendarGrid = calendarize(new Date(`${curYear}-${curMonth + 1}-01`));
-    }}>Next</button
+    }}
   >
+    Next
+  </button>
 </div>
 
 <div class="calendar">

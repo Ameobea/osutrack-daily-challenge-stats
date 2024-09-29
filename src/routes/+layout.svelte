@@ -12,15 +12,18 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-  <div class="root">
+  <div class="content">
     <slot />
-  </div></QueryClientProvider
->
+  </div>
+</QueryClientProvider>
 
 <style>
-  .root {
-    display: flex;
+  .content {
     max-width: 1270px;
     margin: 0 auto;
+  }
+
+  :global(a) {
+    color: rgb(244, 244, 244);
   }
 </style>
