@@ -41,6 +41,9 @@ export interface Mod {
 export const fetchUsername = async (fetch: typeof window.fetch, userID: number): Promise<string> =>
   fetch(`${API_BASE_URL}/users/${userID}/username`).then(res => res.json());
 
+export const fetchUserID = async (fetch: typeof window.fetch, username: string): Promise<number> =>
+  fetch(`${API_BASE_URL}/users/${username}/id?mode=0`).then(res => res.json());
+
 export const fetchUserDailyChangeHistory = async (
   fetch: typeof window.fetch,
   userID: number,
@@ -153,6 +156,7 @@ export const getUserDailyChallengeForDay = (
 
 export interface UserDailyChallengeStats {
   total_participation: number;
+  total_challenge_count: number;
   total_score_stats: TotalScoreStats;
   score_distribution: ScoreDistribution;
   time_of_day_distribution: TimeOfDayDistribution;
@@ -202,3 +206,16 @@ export const fetchUserDailyChallengeStats = (
   userID: number
 ): Promise<UserDailyChallengeStats> =>
   fetch(`${API_BASE_URL}/daily-challenge/user/${userID}/stats`).then(res => res.json());
+
+export interface DailyChallengeRanking {
+  user_id: number;
+  username: string;
+  rank: number;
+  total_score: number;
+}
+
+export const fetchDailyChallengeRankings = (
+  fetch: typeof window.fetch,
+  page: number
+): Promise<{ rankings: DailyChallengeRanking[]; total_rankings: number }> =>
+  fetch(`${API_BASE_URL}/daily-challenge/rankings?page=${page}`).then(res => res.json());

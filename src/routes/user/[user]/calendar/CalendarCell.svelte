@@ -10,6 +10,7 @@
 <script lang="ts">
   import type { DailyChallengeHistoryEntry } from '../../../../api';
   import { Colors } from '../../../../conf';
+  import { colorPercentile, colorPlacement } from '../../../../util';
 
   export let stats: DailyChallengeHistoryEntry | undefined;
   export let dayID: number;
@@ -51,33 +52,12 @@
     <div class="day">{day}</div>
     <span class="data">
       {#if stats}
-        <span
-          class="percent"
-          style:color={(() => {
-            if (stats.percentile <= 1) {
-              return Colors.SS;
-            } else if (stats.percentile <= 10) {
-              return Colors.S;
-            } else if (stats.percentile <= 50) {
-              return Colors.A;
-            }
-          })()}
-        >
+        <span class="percent" style:color={colorPercentile(stats.percentile)}>
           {PercentFormatter.format(stats.percentile / 100)}
         </span>
         <br />
         <span class="rank">
-          <span
-            style:color={(() => {
-              if (stats.score.user_rank <= 10) {
-                return Colors.SS;
-              } else if (stats.score.user_rank <= 50) {
-                return Colors.S;
-              }
-
-              return undefined;
-            })()}
-          >
+          <span style:color={colorPlacement(stats.score.user_rank)}>
             {RankFormatter.format(stats.score.user_rank)}
           </span>/{RankFormatter.format(stats.total_rankings)}
         </span>

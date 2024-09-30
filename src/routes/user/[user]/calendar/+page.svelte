@@ -2,7 +2,7 @@
   import { queryParam } from 'sveltekit-search-params';
 
   import Calendar from './Calendar.svelte';
-  import type { PageData } from '../$types';
+  import type { PageData } from './$types';
   import StatsForDay from './StatsForDay.svelte';
   import type { DailyChallengeHistoryEntry } from '../../../../api';
 

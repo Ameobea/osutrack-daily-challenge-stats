@@ -21,12 +21,11 @@
   import Information from 'carbon-icons-svelte/lib/Information.svelte';
 
   import type { UserDailyChallengeStats } from '../../../api';
-  import { dayIDToDate } from '../../../util';
+  import { colorPlacement, dayIDToDate } from '../../../util';
   import { renderHistogram } from '../../../components/histogram';
 
   export let userID: number;
   export let stats: UserDailyChallengeStats;
-  $: totalParticipation = stats.total_participation;
 
   let innerWidth = 550;
   let scoreHistogramContainer: HTMLDivElement;
@@ -35,7 +34,16 @@
   $: if (scoreHistogramContainer) {
     let svgWidth = Math.min(innerWidth - 10, 500);
     const svgHeight = Math.floor(svgWidth * 0.5);
-    renderHistogram(scoreHistogramContainer, stats.score_distribution, svgHeight, svgWidth);
+    renderHistogram(
+      scoreHistogramContainer,
+      stats.score_distribution,
+      svgHeight,
+      svgWidth,
+      undefined,
+      { top: 10, right: 3, bottom: 20, left: 18 },
+      undefined,
+      3
+    );
   }
 
   $: if (timeOfDayHistogramContainer) {
@@ -47,13 +55,14 @@
       svgHeight,
       svgWidth,
       undefined,
-      undefined,
+      { top: 10, right: 8, bottom: 20, left: 25 },
       // converting from seconds from 0 to 86400 to hours from 0 to 24
       (x: number) => {
         const hourIxUTC = Math.floor(x / 3600);
         const date = new Date(`2024-04-20T${hourIxUTC < 10 ? 0 : ''}${hourIxUTC}:00:00Z`);
         return date.toLocaleTimeString(undefined, { hour: 'numeric' /*hour12: true*/ });
-      }
+      },
+      3
     );
   }
 </script>
@@ -64,7 +73,11 @@
   <div class="top-stats">
     <div class="stats-table">
       <div class="label">Total Participation</div>
-      <div class="value">{IntegerFormatter.format(totalParticipation)}</div>
+      <div class="value">
+        {IntegerFormatter.format(stats.total_participation)}/{IntegerFormatter.format(
+          stats.total_challenge_count
+        )}
+      </div>
       <div class="label">Best Daily Streak</div>
       <div class="value">{IntegerFormatter.format(stats.streaks.best_daily_streak)}</div>
       <div class="label">Current Daily Streak</div>
@@ -89,11 +102,13 @@
       <div class="value">{IntegerFormatter.format(stats.total_score_stats.total_score_sum)}</div>
       <div class="label">Best Placement</div>
       <div class="value">
-        <b>{IntegerFormatter.format(stats.best_placement_absolute.rank)}</b>
+        <span style:color={colorPlacement(stats.best_placement_absolute.rank)}>
+          {IntegerFormatter.format(stats.best_placement_absolute.rank)}
+        </span>
         /{IntegerFormatter.format(stats.best_placement_absolute.total_rankings)} on&nbsp;
         <a
-          data-sveltekit-preload-data="hover"
-          href="/user/{userID}/calendar?day={stats.best_placement_absolute.day_id}"
+          href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats.best_placement_absolute
+            .day_id}"
         >
           {formatDayID(stats.best_placement_absolute.day_id)}
         </a>
@@ -102,8 +117,8 @@
       <div class="value">
         {IntegerFormatter.format(stats.best_placement_score.score)} on&nbsp;
         <a
-          data-sveltekit-preload-data="hover"
-          href="/user/{userID}/calendar?day={stats.best_placement_score.day_id}"
+          href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats.best_placement_score
+            .day_id}"
         >
           {formatDayID(stats.best_placement_score.day_id)}
         </a>
@@ -130,9 +145,12 @@
     min-width: min(100vw, 520px);
   }
 
+  .top-stats {
+    margin-top: 24px;
+  }
+
   .histograms,
   .top-stats {
-    margin-top: 16px;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -146,20 +164,24 @@
     font-size: 22px;
   }
 
-  .histograms > div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .histograms {
+    margin-top: 42px;
 
-    h3 {
-      margin-bottom: 8px;
+    & > div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      h3 {
+        margin-bottom: 8px;
+      }
     }
   }
 
   .stats-table {
     flex: 1;
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1.25fr 1fr;
     min-width: calc(min(100vw - 20px, 520px));
     max-width: calc(min(100vw - 20px, 520px));
     border: 1px solid hsl(200, 10%, 15%);

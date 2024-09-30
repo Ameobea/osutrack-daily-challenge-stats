@@ -15,7 +15,8 @@ export const renderHistogram = (
   svgWidth: number,
   userScore?: number,
   margin: typeof DefaultMargin = DefaultMargin,
-  xAxisTickFormat: (value: number) => string = format('.2s')
+  xAxisTickFormat: (value: number) => string = format('.2s'),
+  yAxisTicksCount = 3
 ) => {
   histogramContainer.innerHTML = '';
 
@@ -84,5 +85,9 @@ export const renderHistogram = (
     g.node()!.insertBefore(rectElement, textElement);
   }
 
-  g.append('g').call(axisLeft(y));
+  g.append('g').call(
+    axisLeft(y)
+      .tickFormat(x => IntegerFormatter.format(typeof x === 'number' ? x : x.valueOf()))
+      .ticks(yAxisTicksCount)
+  );
 };

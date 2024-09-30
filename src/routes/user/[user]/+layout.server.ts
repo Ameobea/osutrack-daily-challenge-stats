@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 
-import { fetchUserDailyChangeHistory, fetchUsername } from '../../../api';
+import { fetchUsername } from '../../../api';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ fetch, params: { user: rawUserID } }) => {
@@ -9,9 +9,6 @@ export const load: LayoutServerLoad = async ({ fetch, params: { user: rawUserID 
     return error(400, 'Invalid user ID');
   }
 
-  const [history, username] = await Promise.all([
-    fetchUserDailyChangeHistory(fetch, userID),
-    fetchUsername(fetch, userID),
-  ]);
-  return { history, username };
+  const username = await fetchUsername(fetch, userID);
+  return { username };
 };

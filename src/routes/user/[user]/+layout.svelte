@@ -13,33 +13,32 @@
     }
   };
 
-  const getTabPath = (username: string, tab: UserTab) => {
+  const getTabPath = (userID: string, tab: UserTab) => {
     switch (tab) {
       case UserTab.Summary:
-        return `/user/${username}`;
+        return `/osutrack/daily-challenge/user/${userID}`;
       case UserTab.Calendar:
-        return `/user/${username}/calendar`;
+        return `/osutrack/daily-challenge/user/${userID}/calendar`;
       default:
-        return `/user/${username}`;
+        return `/osutrack/daily-challenge/user/${userID}`;
     }
   };
 </script>
 
 <script lang="ts">
-  import { Tabs, Tab } from 'carbon-components-svelte';
-  import { goto, preloadCode } from '$app/navigation';
+  import { Tabs, Tab, TileGroup, RadioTile } from 'carbon-components-svelte';
+  import { goto, preloadData } from '$app/navigation';
   import { page } from '$app/stores';
-  import type { PageData } from './$types';
+  import type { LayoutData } from './$types';
 
-  export let data: PageData;
+  export let data: LayoutData;
   $: username = data.username;
 
   $: activeTab = getActiveTab($page.url);
   $: userID = $page.params.user;
 
-  const handleTabSelected = (evt: any) => {
-    const newSelectedTab = evt.detail as UserTab;
-
+  const handleTabSelected = (newSelectedTab: UserTab) => {
+    console.log('Selected tab:', newSelectedTab);
     // It's possible that we change tabs using a link in the page or other means.
     //
     // If so, we want to avoid overwriting any query params or hash that might have been added.
@@ -51,31 +50,45 @@
     goto(getTabPath(userID, newSelectedTab));
   };
 
+  let innerWidth = 550;
+
   const mkTabPrefetcher = (tab: UserTab) => () => {
     const path = getTabPath(userID, tab);
-    preloadCode(path);
+    return preloadData(path);
   };
 </script>
 
+<svelte:window bind:innerWidth />
+
 <div class="side-header">
   <h2>
-    <a href={`https://osu.ppy.sh/u/userID`} target="_blank">
+    <a href={`https://osu.ppy.sh/u/${userID}`} target="_blank">
       {username}
     </a>
   </h2>
   <img src="https://ameobea.b-cdn.net/osutrack/Mixins/userImage.php?u={userID}" alt="User avatar" />
+  {#if innerWidth >= 1920}
+    <div class="tiles-container">
+      <TileGroup selected={activeTab.toString()} on:select={evt => handleTabSelected(+evt.detail as UserTab)}>
+        <RadioTile on:mouseenter={mkTabPrefetcher(UserTab.Summary)} value={UserTab.Summary.toString()}>Summary</RadioTile>
+        <RadioTile  on:mouseenter={mkTabPrefetcher(UserTab.Calendar)} value={UserTab.Calendar.toString()}>Calendar</RadioTile>
+      </TileGroup>
+    </div>
+  {/if}
 </div>
 
 <div class="root">
-  <Tabs
-    autoWidth
-    selected={activeTab}
-    on:change={handleTabSelected}
-    style="margin-left: auto; margin-right: auto; background-color: #111;"
-  >
-    <Tab on:mouseenter={mkTabPrefetcher(UserTab.Summary)} label="Summary" />
-    <Tab on:mouseenter={mkTabPrefetcher(UserTab.Calendar)} label="Calendar" />
-  </Tabs>
+  {#if innerWidth < 1920}
+    <Tabs
+      autoWidth
+      selected={activeTab}
+      on:change={evt => handleTabSelected(evt.detail)}
+      style="margin-left: auto; margin-right: auto; background-color: #111;"
+    >
+      <Tab href={getTabPath(userID, UserTab.Summary)} label="Summary" />
+      <Tab href={getTabPath(userID, UserTab.Calendar)} label="Calendar" />
+    </Tabs>
+  {/if}
   <slot />
 </div>
 
@@ -118,6 +131,11 @@
       margin-right: 12px;
       aspect-ratio: 1;
     }
+  }
+
+  .tiles-container {
+    width: 100%;
+    margin-top: 12px;
   }
 
   @media (min-width: 1920px) {
