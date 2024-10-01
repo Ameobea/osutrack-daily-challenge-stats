@@ -8,7 +8,7 @@
 </script>
 
 <div class="root">
-  <UserStats stats={data.stats} {userID} />
+  <UserStats stats={data.stats} {userID} username={data.username} />
 </div>
 
 <style lang="css">

@@ -27,8 +27,10 @@
 
 <script lang="ts">
   import { Tabs, Tab, TileGroup, RadioTile } from 'carbon-components-svelte';
+  import SvelteSeo from "svelte-seo";
   import { goto, preloadData } from '$app/navigation';
   import { page } from '$app/stores';
+
   import type { LayoutData } from './$types';
 
   export let data: LayoutData;
@@ -38,7 +40,6 @@
   $: userID = $page.params.user;
 
   const handleTabSelected = (newSelectedTab: UserTab) => {
-    console.log('Selected tab:', newSelectedTab);
     // It's possible that we change tabs using a link in the page or other means.
     //
     // If so, we want to avoid overwriting any query params or hash that might have been added.
@@ -59,6 +60,12 @@
 </script>
 
 <svelte:window bind:innerWidth />
+
+<SvelteSeo
+  title="{username} | Daily Challenge Stats"
+  description="osu! daily challenge stats for {username}"
+  openGraph={{ title: `${username} | Daily Challenge Stats`, description: `osu! daily challenge stats for ${username}` }}
+/>
 
 <div class="side-header">
   <h2>

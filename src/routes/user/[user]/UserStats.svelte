@@ -25,6 +25,7 @@
   import { renderHistogram } from '../../../components/histogram';
 
   export let userID: number;
+  export let username: string;
   export let stats: UserDailyChallengeStats;
 
   let innerWidth = 550;
@@ -90,7 +91,17 @@
     <div class="stats-table">
       <div class="label">Global Daily Challenge Rank</div>
       <div class="value">
-        {IntegerFormatter.format(stats.total_score_stats.total_score_rank)}
+        <a
+          href="/osutrack/daily-challenge/rankings{(() => {
+            const pageSize = 50;
+            const pageNumber = Math.floor(
+              (stats.total_score_stats.total_score_rank - 1) / pageSize
+            );
+            return pageNumber > 0 ? `?page=${pageNumber + 1}` : '';
+          })()}#username={encodeURIComponent(username)}"
+        >
+          {IntegerFormatter.format(stats.total_score_stats.total_score_rank)}
+        </a>
         <TooltipIcon
           style="margin-left: 8px;"
           icon={Information}

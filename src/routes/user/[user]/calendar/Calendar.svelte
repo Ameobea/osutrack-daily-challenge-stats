@@ -18,7 +18,7 @@
   let curYear = now.getFullYear();
   let curMonth = now.getMonth();
 
-  $: calendarGrid = calendarize(new Date(`${curYear}-${curMonth + 1}-01`));
+  $: calendarGrid = calendarize(new Date(curYear, curMonth));
 </script>
 
 <div class="header">
@@ -30,7 +30,6 @@
         curMonth = 11;
         curYear -= 1;
       }
-      calendarGrid = calendarize(new Date(`${curYear}-${curMonth + 1}-01`));
     }}
   >
     Previous
@@ -48,7 +47,6 @@
         curMonth = 0;
         curYear += 1;
       }
-      calendarGrid = calendarize(new Date(`${curYear}-${curMonth + 1}-01`));
     }}
   >
     Next

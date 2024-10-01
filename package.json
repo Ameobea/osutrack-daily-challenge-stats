@@ -40,6 +40,7 @@
 		"@sveltestack/svelte-query": "^1.6.0",
 		"calendarize": "^1.1.1",
 		"d3": "^7.9.0",
+		"svelte-seo": "^1.6.1",
 		"sveltekit-search-params": "^3.0.0"
 	}
 }

@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { goto, preloadData } from '$app/navigation';
   import { InlineLoading } from 'carbon-components-svelte';
   import { Search } from 'carbon-icons-svelte';
+  import SvelteSeo from 'svelte-seo';
+  import { goto, preloadData } from '$app/navigation';
+
   import { fetchUserID } from '../api';
   import { logError } from '../sentry';
 
@@ -49,9 +51,18 @@
       return;
     }
 
-    preloadData(`/user/${searchValue}`);
+    preloadData(`/osutrack/daily-challenge/user/${searchValue}`);
   };
 </script>
+
+<SvelteSeo
+  title="osu!track Daily Challenge Stats"
+  description="Player stats and global rankings for the osu! daily challenge"
+  openGraph={{
+    title: 'osu!track Daily Challenge Stats',
+    description: 'Player stats and global rankings for the osu! daily challenge',
+  }}
+/>
 
 <div class="root">
   <h1>osu!track Daily Challenge Stats</h1>

@@ -12,10 +12,11 @@
 </script>
 
 <script lang="ts">
-  import { page } from '$app/stores';
   import { useQuery } from '@sveltestack/svelte-query';
   import { queryParam } from 'sveltekit-search-params';
   import { Pagination } from 'carbon-components-svelte';
+  import SvelteSeo from 'svelte-seo';
+  import { page } from '$app/stores';
 
   import { fetchDailyChallengeRankings } from '../../api';
   import type { PageData } from './$types';
@@ -23,6 +24,24 @@
   export let data: PageData;
 
   const initialPageNumber = Math.max(+($page.url.searchParams.get('page') || '1'), 1);
+  let didScrollIntoView = false;
+  let highlightedUsername: string | null = null;
+  $: if (!didScrollIntoView) {
+    const hash = $page.url.hash;
+    // we have to implement our own scrolling logic because the default hash-based scrolling
+    // doesn't work with Sveltekit's client-side navigation
+    if (hash.startsWith('#username=')) {
+      highlightedUsername = decodeURIComponent(hash.slice(10));
+      didScrollIntoView = true;
+      setTimeout(
+        () =>
+          void document
+            .querySelector(`[data-username="${highlightedUsername}"]`)
+            ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+        100
+      );
+    }
+  }
 
   let pageNumber = queryParam<number>('page', {
     encode: v => v.toString(),
@@ -37,6 +56,15 @@
   $: rankings = $pageNumber === initialPageNumber ? data.rankings : $res.data?.rankings;
 </script>
 
+<SvelteSeo
+  title="osu!track Daily Challenge Rankings"
+  description="Global rankings for the osu! daily challenge"
+  openGraph={{
+    title: 'osu!track Daily Challenge Rankings',
+    description: 'Global rankings for the osu! daily challenge',
+  }}
+/>
+
 <div class="root">
   <h1>Daily Challenge Rankings</h1>
   <div class="rankings-table">
@@ -45,9 +73,14 @@
     <div class="last header">Total Score</div>
     {#if rankings}
       {#each rankings as { rank, username, total_score, user_id }}
-        <div class="first rank">#{RankFormatter.format(rank)}</div>
-        <div><a href="/osutrack/daily-challenge/user/{user_id}">{username}</a></div>
-        <div class="last" title={RankFormatter.format(total_score)}>
+        {@const highlighted = username === highlightedUsername ? 'true' : undefined}
+        <div data-highlighted={highlighted} class="first rank">
+          #{RankFormatter.format(rank)}
+        </div>
+        <div data-username={username} data-highlighted={highlighted} class="username">
+          <a href="/osutrack/daily-challenge/user/{user_id}">{username}</a>
+        </div>
+        <div data-highlighted={highlighted} class="last" title={RankFormatter.format(total_score)}>
           {TotalScoreFormatter.format(total_score)}
         </div>
       {/each}
@@ -98,7 +131,15 @@
       background: rgba(255, 255, 255, 0.03);
       margin-bottom: 5px;
 
-      a {
+      &[data-highlighted='true'] {
+        background: rgba(255, 71, 246, 0.25);
+
+        &.username {
+          font-weight: 500;
+        }
+      }
+
+      & > a {
         text-decoration: none;
 
         &:hover {
