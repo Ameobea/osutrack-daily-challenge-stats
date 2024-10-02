@@ -163,9 +163,9 @@ export interface UserDailyChallengeStats {
   streaks: Streaks;
   top_10_percent_count: number;
   top_50_percent_count: number;
-  best_placement_absolute: BestPlacement;
-  best_placement_percentile: BestPlacement;
-  best_placement_score: BestPlacement;
+  best_placement_absolute: BestPlacement | null;
+  best_placement_percentile: BestPlacement | null;
+  best_placement_score: BestPlacement | null;
 }
 
 export interface TotalScoreStats {

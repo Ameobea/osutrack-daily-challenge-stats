@@ -136,6 +136,7 @@
       max-width: 48px;
       max-height: 48px;
       aspect-ratio: 1;
+      margin-right: 12px;
     }
   }
 
@@ -165,6 +166,7 @@
         min-height: 256px;
         max-width: 256px;
         max-height: 256px;
+        margin-right: 0;
       }
 
       h2 {

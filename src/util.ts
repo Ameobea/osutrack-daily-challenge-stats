@@ -12,8 +12,10 @@ export const dayIDToDate = (dayID: number): Date => {
   );
 };
 
-export const colorPlacement = (placement: number): string => {
-  if (placement <= 10) {
+export const colorPlacement = (placement: number | null | undefined): string => {
+  if (typeof placement !== 'number') {
+    return Colors.White;
+  } else if (placement <= 10) {
     return Colors.SS;
   } else if (placement <= 50) {
     return Colors.S;
@@ -22,8 +24,10 @@ export const colorPlacement = (placement: number): string => {
   }
 };
 
-export const colorPercentile = (percentile: number): string => {
-  if (percentile <= 1) {
+export const colorPercentile = (percentile: number | null | undefined): string => {
+  if (typeof percentile !== 'number') {
+    return Colors.White;
+  } else if (percentile <= 1) {
     return Colors.SS;
   } else if (percentile <= 10) {
     return Colors.S;

@@ -86,48 +86,62 @@
     <div class="stats-table">
       <div class="label">Global Daily Challenge Rank</div>
       <div class="value">
-        <a
-          href="/osutrack/daily-challenge/rankings{(() => {
-            const pageSize = 50;
-            const pageNumber = Math.floor(
-              (stats.total_score_stats.total_score_rank - 1) / pageSize
-            );
-            return pageNumber > 0 ? `?page=${pageNumber + 1}` : '';
-          })()}#username={encodeURIComponent(username)}"
-        >
-          {IntegerFormatter.format(stats.total_score_stats.total_score_rank)}
-        </a>
-        <TooltipIcon
-          style="margin-left: 8px;"
-          icon={Information}
-          tooltipText="Ranked by sum of all daily challenge scores"
-          direction="right"
-        />
+        {#if stats.total_score_stats.total_score_rank}
+          <a
+            href="/osutrack/daily-challenge/rankings{(() => {
+              const pageSize = 50;
+              const pageNumber = Math.floor(
+                (stats.total_score_stats.total_score_rank - 1) / pageSize
+              );
+              return pageNumber > 0 ? `?page=${pageNumber + 1}` : '';
+            })()}#username={encodeURIComponent(username)}"
+          >
+            {IntegerFormatter.format(stats.total_score_stats.total_score_rank)}
+          </a>
+          <TooltipIcon
+            style="margin-left: 8px;"
+            icon={Information}
+            tooltipText="Ranked by sum of all daily challenge scores"
+            direction="right"
+          />
+        {:else}
+          -
+        {/if}
       </div>
       <div class="label">Total Score</div>
       <div class="value">{IntegerFormatter.format(stats.total_score_stats.total_score_sum)}</div>
       <div class="label">Best Placement</div>
       <div class="value">
-        <span style:color={colorPlacement(stats.best_placement_absolute.rank)}>
-          {IntegerFormatter.format(stats.best_placement_absolute.rank)}
-        </span>
-        /{IntegerFormatter.format(stats.best_placement_absolute.total_rankings)} on&nbsp;
-        <a
-          href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats.best_placement_absolute
-            .day_id}"
-        >
-          {formatDayID(stats.best_placement_absolute.day_id)}
-        </a>
+        {#if stats.best_placement_absolute}
+          <span style:color={colorPlacement(stats.best_placement_absolute?.rank)}>
+            {IntegerFormatter.format(stats.best_placement_absolute.rank)}
+          </span>
+          /{IntegerFormatter.format(stats.best_placement_absolute.total_rankings)} on&nbsp;
+          <a
+            href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats
+              .best_placement_absolute?.day_id}"
+          >
+            {typeof stats.best_placement_absolute?.total_rankings === 'number'
+              ? formatDayID(stats.best_placement_absolute.day_id)
+              : '-'}
+          </a>
+        {:else}
+          -
+        {/if}
       </div>
       <div class="label">Highest Score</div>
       <div class="value">
-        {IntegerFormatter.format(stats.best_placement_score.score)} on&nbsp;
-        <a
-          href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats.best_placement_score
-            .day_id}"
-        >
-          {formatDayID(stats.best_placement_score.day_id)}
-        </a>
+        {#if typeof stats.best_placement_score?.score === 'number'}
+          {IntegerFormatter.format(stats.best_placement_score.score)} on&nbsp;
+          <a
+            href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats.best_placement_score
+              .day_id}"
+          >
+            {formatDayID(stats.best_placement_score.day_id)}
+          </a>
+        {:else}
+          -
+        {/if}
       </div>
     </div>
   </div>
