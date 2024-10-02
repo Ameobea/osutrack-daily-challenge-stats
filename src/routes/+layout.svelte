@@ -13,7 +13,7 @@
 </script>
 
 {#if $page.url.pathname !== '/osutrack/daily-challenge' && $page.url.pathname !== '/osutrack/daily-challenge/'}
-  <a class="back-to-home" href="/"> Back to home </a>
+  <a class="back-to-home" href="/osutrack/daily-challenge/"> Back to home </a>
 {/if}
 
 <QueryClientProvider client={queryClient}>
