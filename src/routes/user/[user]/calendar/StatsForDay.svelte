@@ -33,13 +33,13 @@
   $: if (statsForDay && histogramContainer) {
     let svgWidth = Math.min(innerWidth, 500);
     const svgHeight = Math.floor(svgWidth * 0.5);
-    renderHistogram(
+    renderHistogram({
       histogramContainer,
-      statsForDay.histogram,
+      histogramData: statsForDay.histogram,
       svgHeight,
       svgWidth,
-      stats?.score.total_score
-    );
+      userScore: stats?.score.total_score,
+    });
   }
 </script>
 

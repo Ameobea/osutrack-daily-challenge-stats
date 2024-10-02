@@ -6,15 +6,18 @@
   import calendarize from 'calendarize';
 
   import type { DailyChallengeHistoryEntry } from '../../../../api';
-  import CalendarCell from './CalendarCell.svelte';
   import { dayIDToDate } from '../../../../util';
+  import CalendarCell from './CalendarCell.svelte';
 
   export let statsByDayID: Record<number, DailyChallengeHistoryEntry>;
   export let selectedDayID: number | null;
   export let setSelectedDayID: (dayID: number) => void;
+  export let latestChallengeDayID: number;
 
   const initialSelectedDayID = selectedDayID;
-  const now = initialSelectedDayID ? dayIDToDate(initialSelectedDayID) : new Date();
+  const now = initialSelectedDayID
+    ? dayIDToDate(initialSelectedDayID)
+    : dayIDToDate(latestChallengeDayID);
   let curYear = now.getFullYear();
   let curMonth = now.getMonth();
 

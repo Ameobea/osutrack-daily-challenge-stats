@@ -33,3 +33,14 @@ export const colorPercentile = (percentile: number): string => {
     return Colors.White;
   }
 };
+
+export const IntegerFormatter = new Intl.NumberFormat(undefined, {
+  style: 'decimal',
+  maximumFractionDigits: 0,
+});
+
+export const TotalScoreFormatter = new Intl.NumberFormat(undefined, {
+  // using suffixes like K and M
+  notation: 'compact',
+  maximumFractionDigits: 3,
+});

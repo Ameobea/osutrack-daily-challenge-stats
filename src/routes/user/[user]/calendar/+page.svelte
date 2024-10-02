@@ -23,7 +23,12 @@
 </script>
 
 <div class="root">
-  <Calendar {statsByDayID} selectedDayID={$selectedDayID} {setSelectedDayID} />
+  <Calendar
+    {statsByDayID}
+    selectedDayID={$selectedDayID}
+    {setSelectedDayID}
+    latestChallengeDayID={data.latestChallengeDayID}
+  />
   {#if $selectedDayID}
     <StatsForDay dayID={$selectedDayID} stats={statsByDayID[$selectedDayID]} />
   {:else}

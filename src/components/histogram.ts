@@ -1,23 +1,34 @@
 import { axisBottom, axisLeft, format, scaleLinear, select } from 'd3';
 import type { Histogram } from '../api';
+import { IntegerFormatter } from '../util';
 
 const DefaultMargin = { top: 10, right: 30, bottom: 20, left: 25 };
 
-const IntegerFormatter = new Intl.NumberFormat(undefined, {
-  style: 'decimal',
-  maximumFractionDigits: 0,
-});
-
-export const renderHistogram = (
-  histogramContainer: HTMLDivElement,
-  histogramData: Histogram,
-  svgHeight: number,
-  svgWidth: number,
-  userScore?: number,
-  margin: typeof DefaultMargin = DefaultMargin,
-  xAxisTickFormat: (value: number) => string = format('.2s'),
-  yAxisTicksCount = 3
-) => {
+export const renderHistogram = ({
+  histogramContainer,
+  histogramData,
+  svgHeight,
+  svgWidth,
+  userScore,
+  margin = DefaultMargin,
+  xAxisTickFormat = format('.2s'),
+  yAxisTicksCount = 3,
+  yAxisTickValues,
+  xAxisTickValues,
+  xAxisTickCount,
+}: {
+  histogramContainer: HTMLDivElement;
+  histogramData: Histogram;
+  svgHeight: number;
+  svgWidth: number;
+  userScore?: number;
+  margin?: typeof DefaultMargin;
+  xAxisTickFormat?: (value: number) => string;
+  yAxisTicksCount?: number;
+  yAxisTickValues?: number[];
+  xAxisTickValues?: number[];
+  xAxisTickCount?: number;
+}) => {
   histogramContainer.innerHTML = '';
 
   const svg = select(histogramContainer)
@@ -31,7 +42,6 @@ export const renderHistogram = (
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
   const x = scaleLinear().domain([histogramData.min, histogramData.max]).range([0, width]);
-
   const y = scaleLinear()
     .domain([0, Math.max(...histogramData.buckets)])
     .range([height, 0]);
@@ -49,9 +59,16 @@ export const renderHistogram = (
     .attr('height', d => height - y(d))
     .attr('fill', '#24a6c7');
 
-  g.append('g')
-    .attr('transform', `translate(0,${height})`)
-    .call(axisBottom(x).tickFormat(x => xAxisTickFormat(typeof x === 'number' ? x : x.valueOf())));
+  let xAxis = axisBottom(x).tickFormat(x =>
+    xAxisTickFormat(typeof x === 'number' ? x : x.valueOf())
+  );
+  if (xAxisTickValues) {
+    xAxis = xAxis.tickValues(xAxisTickValues);
+  } else if (typeof xAxisTickCount === 'number') {
+    xAxis = xAxis.ticks(xAxisTickCount);
+  }
+
+  g.append('g').attr('transform', `translate(0,${height})`).call(xAxis);
 
   // render magenta line for user score along with a label
   if (typeof userScore === 'number') {
@@ -85,9 +102,14 @@ export const renderHistogram = (
     g.node()!.insertBefore(rectElement, textElement);
   }
 
-  g.append('g').call(
-    axisLeft(y)
-      .tickFormat(x => IntegerFormatter.format(typeof x === 'number' ? x : x.valueOf()))
-      .ticks(yAxisTicksCount)
+  let yAxis = axisLeft(y).tickFormat(x =>
+    IntegerFormatter.format(typeof x === 'number' ? x : x.valueOf())
   );
+  if (yAxisTickValues) {
+    yAxis = yAxis.tickValues(yAxisTickValues);
+  } else {
+    yAxis = yAxis.ticks(yAxisTicksCount);
+  }
+
+  g.append('g').call(yAxis);
 };

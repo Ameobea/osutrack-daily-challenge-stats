@@ -1,16 +1,3 @@
-<script lang="ts" context="module">
-  const RankFormatter = new Intl.NumberFormat(undefined, {
-    style: 'decimal',
-    maximumFractionDigits: 0,
-  });
-
-  const TotalScoreFormatter = new Intl.NumberFormat(undefined, {
-    // using suffixes like K and M
-    notation: 'compact',
-    maximumFractionDigits: 3,
-  });
-</script>
-
 <script lang="ts">
   import { useQuery } from '@sveltestack/svelte-query';
   import { queryParam } from 'sveltekit-search-params';
@@ -20,6 +7,7 @@
 
   import { fetchDailyChallengeRankings } from '../../api';
   import type { PageData } from './$types';
+  import { IntegerFormatter, TotalScoreFormatter } from '../../util';
 
   export let data: PageData;
 
@@ -75,12 +63,16 @@
       {#each rankings as { rank, username, total_score, user_id }}
         {@const highlighted = username === highlightedUsername ? 'true' : undefined}
         <div data-highlighted={highlighted} class="first rank">
-          #{RankFormatter.format(rank)}
+          #{IntegerFormatter.format(rank)}
         </div>
         <div data-username={username} data-highlighted={highlighted} class="username">
           <a href="/osutrack/daily-challenge/user/{user_id}">{username}</a>
         </div>
-        <div data-highlighted={highlighted} class="last" title={RankFormatter.format(total_score)}>
+        <div
+          data-highlighted={highlighted}
+          class="last"
+          title={IntegerFormatter.format(total_score)}
+        >
           {TotalScoreFormatter.format(total_score)}
         </div>
       {/each}
@@ -108,6 +100,7 @@
   h1 {
     text-align: center;
     margin-top: 16px;
+    height: 100%;
   }
 
   .rankings-table {
@@ -183,6 +176,12 @@
 
     h1 {
       font-size: 24px;
+    }
+  }
+
+  @media (max-width: 700px) {
+    h1 {
+      margin-top: 64px;
     }
   }
 </style>

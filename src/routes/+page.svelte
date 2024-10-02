@@ -103,7 +103,11 @@
     {#if error}
       <span class="error">{error}</span>
     {/if}
-    <a class="rankings-link" href="/osutrack/daily-challenge/rankings">View Global Rankings </a>
+
+    <div class="links">
+      <a href="/osutrack/daily-challenge/rankings">View Global Rankings</a>
+      <a href="/osutrack/daily-challenge/stats">View Aggregate Stats</a>
+    </div>
   </div>
 
   <footer>
@@ -125,13 +129,7 @@
 
   h1 {
     text-align: center;
-  }
-
-  .rankings-link {
-    font-size: 20px;
-    margin-top: 20px;
-    text-align: center;
-    color: rgb(212, 212, 212);
+    font-weight: 500;
   }
 
   .error {
@@ -139,6 +137,35 @@
     margin-top: 3px;
     text-align: center;
     font-size: 16px;
+  }
+
+  .links {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    max-width: 600px;
+    font-size: 24px;
+    color: rgb(212, 212, 212);
+
+    & a {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+      padding: 8px 16px;
+      border: 1px solid #323232;
+      text-decoration: none;
+    }
+
+    & a:hover {
+      background-color: #32323244;
+      text-decoration: none;
+    }
   }
 
   .top {
@@ -176,6 +203,10 @@
   }
 
   @media (max-width: 800px) {
+    .root {
+      padding: 6px 4px 0px 4px;
+    }
+
     .main-search {
       font-size: 20px;
     }
@@ -184,8 +215,21 @@
       font-size: 30px;
     }
 
+    .links {
+      font-size: 16px;
+      gap: 12px;
+
+      & a {
+        min-height: 66px;
+      }
+    }
+
     .top {
       margin-top: -40px;
+    }
+
+    footer {
+      padding-bottom: 2px !important;
     }
   }
 

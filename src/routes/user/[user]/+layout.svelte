@@ -135,7 +135,6 @@
       min-height: 48px;
       max-width: 48px;
       max-height: 48px;
-      margin-right: 12px;
       aspect-ratio: 1;
     }
   }

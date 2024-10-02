@@ -1,9 +1,4 @@
 <script lang="ts" context="module">
-  const IntegerFormatter = new Intl.NumberFormat(undefined, {
-    style: 'decimal',
-    maximumFractionDigits: 0,
-  });
-
   const DateFormatter = new Intl.DateTimeFormat(undefined, {
     year: 'numeric',
     month: 'short',
@@ -21,7 +16,7 @@
   import Information from 'carbon-icons-svelte/lib/Information.svelte';
 
   import type { UserDailyChallengeStats } from '../../../api';
-  import { colorPlacement, dayIDToDate } from '../../../util';
+  import { colorPlacement, dayIDToDate, IntegerFormatter } from '../../../util';
   import { renderHistogram } from '../../../components/histogram';
 
   export let userID: number;
@@ -35,36 +30,36 @@
   $: if (scoreHistogramContainer) {
     let svgWidth = Math.min(innerWidth - 10, 500);
     const svgHeight = Math.floor(svgWidth * 0.5);
-    renderHistogram(
-      scoreHistogramContainer,
-      stats.score_distribution,
+    renderHistogram({
+      histogramContainer: scoreHistogramContainer,
+      histogramData: stats.score_distribution,
       svgHeight,
       svgWidth,
-      undefined,
-      { top: 10, right: 3, bottom: 20, left: 18 },
-      undefined,
-      3
-    );
+      userScore: undefined,
+      margin: { top: 10, right: 3, bottom: 20, left: 18 },
+      xAxisTickFormat: undefined,
+      yAxisTicksCount: 3,
+    });
   }
 
   $: if (timeOfDayHistogramContainer) {
     let svgWidth = Math.min(innerWidth, 500);
     const svgHeight = Math.floor(svgWidth * 0.5);
-    renderHistogram(
-      timeOfDayHistogramContainer,
-      stats.time_of_day_distribution,
+    renderHistogram({
+      histogramContainer: timeOfDayHistogramContainer,
+      histogramData: stats.time_of_day_distribution,
       svgHeight,
       svgWidth,
-      undefined,
-      { top: 10, right: 8, bottom: 20, left: 25 },
+      userScore: undefined,
+      margin: { top: 10, right: 8, bottom: 20, left: 25 },
       // converting from seconds from 0 to 86400 to hours from 0 to 24
-      (x: number) => {
+      xAxisTickFormat: (x: number) => {
         const hourIxUTC = Math.floor(x / 3600);
         const date = new Date(`2024-04-20T${hourIxUTC < 10 ? 0 : ''}${hourIxUTC}:00:00Z`);
-        return date.toLocaleTimeString(undefined, { hour: 'numeric' /*hour12: true*/ });
+        return date.toLocaleTimeString(undefined, { hour: 'numeric' });
       },
-      3
-    );
+      yAxisTicksCount: 3,
+    });
   }
 </script>
 
@@ -241,6 +236,13 @@
 
     h3 {
       font-size: 18px;
+    }
+  }
+
+  @media (max-width: 1135px) {
+    .top-stats,
+    .histograms {
+      justify-content: center;
     }
   }
 </style>

@@ -44,7 +44,7 @@ export const fetchUsername = async (fetch: typeof window.fetch, userID: number):
 export const fetchUserID = async (fetch: typeof window.fetch, username: string): Promise<number> =>
   fetch(`${API_BASE_URL}/users/${username}/id?mode=0`).then(res => res.json());
 
-export const fetchUserDailyChangeHistory = async (
+export const fetchUserDailyChallengeHistory = async (
   fetch: typeof window.fetch,
   userID: number,
   startDayID?: number,
@@ -219,3 +219,35 @@ export const fetchDailyChallengeRankings = (
   page: number
 ): Promise<{ rankings: DailyChallengeRanking[]; total_rankings: number }> =>
   fetch(`${API_BASE_URL}/daily-challenge/rankings?page=${page}`).then(res => res.json());
+
+export interface GlobalDailyChallengeStats {
+  total_unique_participants: number;
+  total_combined_score: number;
+  total_rankings: number;
+  total_challenges: number;
+  map_stats: MapStats;
+}
+
+export interface MapStats {
+  difficulty_distribution: Histogram;
+  length_distribution_seconds: Histogram;
+  ranked_timestamp_distribution: Histogram;
+  ar_distribution: Histogram;
+  od_distribution: Histogram;
+  cs_distribution: Histogram;
+  top_mappers: TopMapper[];
+}
+
+export interface TopMapper {
+  user_id: number;
+  username: string;
+  map_ids: number[];
+}
+
+export const fetchGlobalDailyChallengeStats = (
+  fetch: typeof window.fetch
+): Promise<GlobalDailyChallengeStats> =>
+  fetch(`${API_BASE_URL}/daily-challenge/global-stats`).then(res => res.json());
+
+export const fetchLatestChallengeDayID = (fetch: typeof window.fetch): Promise<number> =>
+  fetch(`${API_BASE_URL}/daily-challenge/latest-day-id`).then(res => res.json());
