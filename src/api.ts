@@ -166,6 +166,7 @@ export interface UserDailyChallengeStats {
   best_placement_absolute: BestPlacement | null;
   best_placement_percentile: BestPlacement | null;
   best_placement_score: BestPlacement | null;
+  most_used_mods: [Mod | null, number][];
 }
 
 export interface TotalScoreStats {
@@ -236,6 +237,7 @@ export interface MapStats {
   od_distribution: Histogram;
   cs_distribution: Histogram;
   top_mappers: TopMapper[];
+  top_required_mods: [Mod[], number][];
 }
 
 export interface TopMapper {

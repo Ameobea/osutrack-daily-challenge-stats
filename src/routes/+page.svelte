@@ -106,7 +106,7 @@
 
     <div class="links">
       <a href="/osutrack/daily-challenge/rankings">View Global Rankings</a>
-      <a href="/osutrack/daily-challenge/stats">View Aggregate Stats</a>
+      <a href="/osutrack/daily-challenge/stats">View Global Stats</a>
     </div>
   </div>
 

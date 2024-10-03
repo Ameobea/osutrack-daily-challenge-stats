@@ -4,6 +4,7 @@
   import { renderHistogram } from '../../components/histogram';
   import { IntegerFormatter, TotalScoreFormatter } from '../../util';
   import type { PageData } from './$types';
+  import ModDisplay from '../../components/ModDisplay.svelte';
 
   export let data: PageData;
   $: stats = data.stats;
@@ -183,7 +184,7 @@
     </div>
     <div>
       <div class="title">Most Featured Mappers</div>
-      <div class="top-mappers-list">
+      <div class="inline-list top-mappers-list">
         {#each stats.map_stats.top_mappers as { map_ids, user_id, username }, i}
           {@const style =
             i == 0 &&
@@ -200,7 +201,22 @@
     </div>
     <div>
       <div class="title">Most Required Mods</div>
-      <p style="text-align: center; color: #888; font-style: italic;">Coming Soon</p>
+      <div class="inline-list top-mods-list">
+        <div class="header">Mods</div>
+        <div class="header">Days Required</div>
+        {#each stats.map_stats.top_required_mods as [mods, count]}
+          <div class="mods-list">
+            {#if mods.length}
+              {#each mods as mod}
+                <ModDisplay {mod} />
+              {/each}
+            {:else}
+              <span style="color: hsl(0, 0%, 50%); font-size: 18px">None</span>
+            {/if}
+          </div>
+          <div>{IntegerFormatter.format(count)}</div>
+        {/each}
+      </div>
     </div>
   </div>
 </div>
@@ -246,7 +262,7 @@
     }
   }
 
-  .top-mappers-list {
+  .inline-list {
     display: grid;
     grid-template-columns: 1fr max-content;
     width: 100%;
@@ -256,12 +272,30 @@
     font-size: 18px;
     margin-bottom: 8px;
 
+    .header {
+      font-weight: 500;
+      color: hsl(0, 0%, 70%);
+      padding-bottom: 4px;
+    }
+
     a {
       text-decoration: none;
 
       &:hover {
         text-decoration: underline;
       }
+    }
+  }
+
+  .top-mods-list {
+    .mods-list {
+      display: flex;
+      gap: 4px;
+    }
+
+    & > div {
+      height: 28px;
+      max-height: 28px;
     }
   }
 

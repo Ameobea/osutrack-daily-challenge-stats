@@ -32,6 +32,10 @@
     color: rgb(244, 244, 244);
   }
 
+  :global(:root) {
+    color-scheme: dark;
+  }
+
   .back-to-home {
     position: absolute;
     top: 8px;

@@ -18,6 +18,7 @@
   import type { UserDailyChallengeStats } from '../../../api';
   import { colorPlacement, dayIDToDate, IntegerFormatter } from '../../../util';
   import { renderHistogram } from '../../../components/histogram';
+  import ModDisplay from '../../../components/ModDisplay.svelte';
 
   export let userID: number;
   export let username: string;
@@ -26,6 +27,9 @@
   let innerWidth = 550;
   let scoreHistogramContainer: HTMLDivElement;
   let timeOfDayHistogramContainer: HTMLDivElement;
+  let modsListManuallyExpanded = false;
+  $: modsListExpanded =
+    modsListManuallyExpanded || stats.most_used_mods.length <= 5 || innerWidth > 600;
 
   $: if (scoreHistogramContainer) {
     let svgWidth = Math.min(innerWidth - 10, 500);
@@ -155,6 +159,37 @@
       <div class="time-of-day-histogram" bind:this={timeOfDayHistogramContainer}></div>
     </div>
   </div>
+  <div style="margin-top: 42px">
+    <div class="mods">
+      <h3>Most Used Mods</h3>
+      <div class="top-mods-list-wrapper">
+        <div class="inline-list top-mods-list">
+          <div class="header">Mods</div>
+          <div class="header">Days Used</div>
+          {#each stats.most_used_mods as [mod, count], i}
+            {#if i < 5 || modsListExpanded}
+              {#if mod}
+                <ModDisplay {mod} />
+              {:else}
+                <span style="color: hsl(0, 0%, 50%); font-size: 18px">None</span>
+              {/if}
+              <div>{IntegerFormatter.format(count)}</div>
+            {/if}
+          {/each}
+        </div>
+      </div>
+      {#if !modsListExpanded && stats.most_used_mods.length > 5}
+        <button
+          class="expand-button"
+          on:click={() => {
+            modsListManuallyExpanded = true;
+          }}
+        >
+          Show All
+        </button>
+      {/if}
+    </div>
+  </div>
 </div>
 
 <style lang="css">
@@ -221,6 +256,65 @@
 
     .value {
       font-size: 15px;
+    }
+  }
+
+  .mods {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .inline-list {
+    display: grid;
+    grid-template-columns: 1fr max-content;
+    width: 100%;
+    max-width: calc(min(90%, 200px));
+    margin: 0 auto;
+    gap: 4px;
+    font-size: 18px;
+    margin-bottom: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+
+    .header {
+      font-weight: 500;
+      color: hsl(0, 0%, 70%);
+      padding-bottom: 4px;
+    }
+
+    & > div {
+      height: 28px;
+      max-height: 28px;
+    }
+  }
+
+  .expand-button {
+    margin-top: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding: 4px 8px;
+    border: 1px solid hsl(200, 10%, 15%);
+    border-radius: 4px;
+    background-color: hsl(200, 10%, 15%);
+    color: hsl(0, 0%, 90%);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .top-mods-list-wrapper {
+    width: 100%;
+    max-width: 500px;
+    max-height: calc(min(80vh, 600px));
+    margin-top: 24px;
+  }
+
+  @media (min-width: 601px) {
+    .top-mods-list-wrapper {
+      overflow-y: auto;
+      overflow-x: visible;
     }
   }
 
