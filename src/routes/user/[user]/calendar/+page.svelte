@@ -30,7 +30,11 @@
     latestChallengeDayID={data.latestChallengeDayID}
   />
   {#if $selectedDayID}
-    <StatsForDay dayID={$selectedDayID} stats={statsByDayID[$selectedDayID]} />
+    <StatsForDay
+      dayID={$selectedDayID}
+      stats={statsByDayID[$selectedDayID]}
+      username={data.username}
+    />
   {:else}
     <p class="select-a-day-prompt">Select a day to view stats</p>
   {/if}

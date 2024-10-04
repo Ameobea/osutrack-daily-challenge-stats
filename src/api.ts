@@ -253,3 +253,12 @@ export const fetchGlobalDailyChallengeStats = (
 
 export const fetchLatestChallengeDayID = (fetch: typeof window.fetch): Promise<number> =>
   fetch(`${API_BASE_URL}/daily-challenge/latest-day-id`).then(res => res.json());
+
+export const fetchRankingsForDay = (
+  fetch: typeof window.fetch,
+  dayID: number,
+  page: number
+): Promise<DailyChallengeRanking[]> =>
+  fetch(`${API_BASE_URL}/daily-challenge/day/${dayID}/rankings?page=${page}`).then(res =>
+    res.json()
+  );

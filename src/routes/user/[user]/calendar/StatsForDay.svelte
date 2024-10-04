@@ -13,15 +13,27 @@
 
 <script lang="ts">
   import { useQuery } from '@sveltestack/svelte-query';
-  import { fetchStatsForDay, type DailyChallengeHistoryEntry } from '../../../../api';
+  import {
+    fetchRankingsForDay,
+    fetchStatsForDay,
+    type DailyChallengeHistoryEntry,
+  } from '../../../../api';
   import { dayIDToDate } from '../../../../util';
   import { renderHistogram } from '../../../../components/histogram';
+  import RankingsTable from '../../../rankings/RankingsTable.svelte';
+  import { writable } from 'svelte/store';
 
   export let dayID: number;
   export let stats: DailyChallengeHistoryEntry | undefined;
+  export let username: string;
 
-  $: res = useQuery(['stats-for-day', dayID], async () => fetchStatsForDay(fetch, dayID));
-  $: statsForDay = $res.data;
+  $: statsRes = useQuery(['stats-for-day', dayID], async () => fetchStatsForDay(fetch, dayID));
+  $: statsForDay = $statsRes.data;
+
+  let rankingsPageNumber = writable(1);
+  $: rankingsRes = useQuery(['rankings-for-day', dayID], async () =>
+    fetchRankingsForDay(fetch, dayID, $rankingsPageNumber)
+  );
 
   $: date = dayIDToDate(dayID);
   $: formattedDate = DateFormatter.format(date);
@@ -72,8 +84,16 @@
       </p>
     </div>
 
-    <div class="histogram-container" bind:this={histogramContainer}></div>
-  {:else if $res.isLoading}
+    <div class="bottom">
+      <div class="histogram-container" bind:this={histogramContainer}></div>
+      <RankingsTable
+        pageNumber={rankingsPageNumber}
+        rankings={$rankingsRes.data}
+        totalRankings={statsForDay.total_scores}
+        highlightedUsername={username}
+      />
+    </div>
+  {:else if $statsRes.isLoading}
     <span class="loading">Loading...</span>
   {:else}
     <span class="loading">No data available for this day.</span>
@@ -131,6 +151,12 @@
 
   ::global(.histogram-bar) {
     stroke: #fff;
+  }
+
+  .bottom {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
   @media (max-width: 600px) {
