@@ -80,13 +80,23 @@
       label: 'Only Fade Approach Circles',
       formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
     },
-    strength: { label: 'Strength' },
+    strength: { label: 'Strength', formatValue: (v: number) => v.toFixed(2) },
     circle_size: { label: 'CS' },
     approach_rate: { label: 'AR' },
     overall_difficulty: { label: 'OD' },
     drain_rate: { label: 'HP' },
     style: { label: 'Style' },
     scale: { label: 'Scale' },
+    affects_hit_sounds: {
+      label: 'Affects Hit Sounds',
+      formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
+    },
+    restart: { label: 'Restart', formatValue: (v: boolean) => (v ? 'Yes' : 'No') },
+    mute_combo_count: { label: 'Mute Combo Count' },
+    minimum_accuracy: { label: 'Minimum Accuracy', formatValue: (v: number) => `${v * 100}%` },
+    spin_speed: { label: 'Spin Speed' },
+    angle_sharpness: { label: 'Angle Sharpness' },
+    seed: { label: 'Seed' },
   };
 
   const formatMod = (

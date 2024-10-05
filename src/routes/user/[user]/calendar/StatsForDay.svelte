@@ -13,6 +13,8 @@
 
 <script lang="ts">
   import { useQuery } from '@sveltestack/svelte-query';
+  import { writable } from 'svelte/store';
+
   import {
     fetchRankingsForDay,
     fetchStatsForDay,
@@ -21,7 +23,7 @@
   import { dayIDToDate } from '../../../../util';
   import { renderHistogram } from '../../../../components/histogram';
   import RankingsTable from '../../../rankings/RankingsTable.svelte';
-  import { writable } from 'svelte/store';
+  import PlayDetails from './PlayDetails.svelte';
 
   export let dayID: number;
   export let stats: DailyChallengeHistoryEntry | undefined;
@@ -85,7 +87,14 @@
     </div>
 
     <div class="bottom">
-      <div class="histogram-container" bind:this={histogramContainer}></div>
+      <div style="display: flex; flex-direction: column; gap: 32px; margin-top: 26px;">
+        {#if stats}
+          <PlayDetails score={stats.score} totalScoresForDay={statsForDay.total_scores} />
+        {:else}
+          <div>Loading...</div>
+        {/if}
+        <div class="histogram-container" bind:this={histogramContainer}></div>
+      </div>
       <RankingsTable
         pageNumber={rankingsPageNumber}
         rankings={$rankingsRes.data}

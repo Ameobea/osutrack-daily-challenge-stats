@@ -38,6 +38,18 @@ export const colorPercentile = (percentile: number | null | undefined): string =
   }
 };
 
+export const getRankColor = (rank: string): string => {
+  if (rank === 'SS' || rank === 'SH') {
+    return Colors.SS;
+  } else if (rank === 'S') {
+    return Colors.S;
+  } else if (rank === 'A') {
+    return Colors.A;
+  } else {
+    return Colors.White;
+  }
+};
+
 export const IntegerFormatter = new Intl.NumberFormat(undefined, {
   style: 'decimal',
   maximumFractionDigits: 0,
@@ -47,4 +59,9 @@ export const TotalScoreFormatter = new Intl.NumberFormat(undefined, {
   // using suffixes like K and M
   notation: 'compact',
   maximumFractionDigits: 3,
+});
+
+export const FloatFormatter = new Intl.NumberFormat(undefined, {
+  style: 'decimal',
+  maximumFractionDigits: 2,
 });

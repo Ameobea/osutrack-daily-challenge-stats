@@ -4,7 +4,7 @@
   import SvelteSeo from 'svelte-seo';
   import { page } from '$app/stores';
 
-  import { fetchDailyChallengeRankings } from '../../api';
+  import { fetchDailyChallengeRankings, type DailyChallengeRanking } from '../../api';
   import type { PageData } from './$types';
   import RankingsTable from './RankingsTable.svelte';
 
@@ -39,8 +39,13 @@
     () => fetchDailyChallengeRankings(fetch, $pageNumber ?? 1),
     { keepPreviousData: true }
   );
+  let lastRankings: DailyChallengeRanking[] | undefined;
+  $: if ($res.data) {
+    lastRankings = $res.data.rankings;
+  }
 
-  $: rankings = $pageNumber === initialPageNumber ? data.rankings : $res.data?.rankings;
+  $: rankings =
+    $pageNumber === initialPageNumber ? data.rankings : ($res.data?.rankings ?? lastRankings);
 </script>
 
 <SvelteSeo
