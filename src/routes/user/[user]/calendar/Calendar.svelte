@@ -67,6 +67,7 @@
         {day}
         isSelected={dayID === selectedDayID}
         setIsSelected={() => setSelectedDayID(dayID)}
+        {latestChallengeDayID}
       />
     {/each}
   {/each}

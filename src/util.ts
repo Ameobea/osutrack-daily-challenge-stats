@@ -39,15 +39,26 @@ export const colorPercentile = (percentile: number | null | undefined): string =
 };
 
 export const getRankColor = (rank: string): string => {
-  if (rank === 'SS' || rank === 'SH') {
+  if (rank === 'SS' || rank === 'X' || rank === 'XH') {
     return Colors.SS;
-  } else if (rank === 'S') {
+  } else if (rank === 'S' || rank === 'SH') {
     return Colors.S;
   } else if (rank === 'A') {
     return Colors.A;
   } else {
     return Colors.White;
   }
+};
+
+export const DateFormatter = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+
+export const formatDayID = (dayID: number) => {
+  const date = dayIDToDate(dayID);
+  return DateFormatter.format(date);
 };
 
 export const IntegerFormatter = new Intl.NumberFormat(undefined, {

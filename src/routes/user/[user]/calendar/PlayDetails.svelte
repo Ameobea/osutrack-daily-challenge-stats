@@ -19,7 +19,7 @@
     Rank <span style:color={colorPlacement(score.user_rank)}
       >{IntegerFormatter.format(score.user_rank)}</span
     >/{IntegerFormatter.format(totalScoresForDay)} (Top
-    <span style:color={colorPercentile(score.user_rank)}>
+    <span style:color={colorPercentile((score.user_rank / totalScoresForDay) * 100)}>
       {FloatFormatter.format((score.user_rank / totalScoresForDay) * 100)}%)
     </span>
   </div>
@@ -72,6 +72,9 @@
   .root {
     display: flex;
     flex-direction: column;
+    border: 1px solid hsl(0, 0%, 20%);
+    padding: 10px;
+    margin-left: 4px;
   }
 
   h2 {
@@ -82,7 +85,7 @@
   .mods {
     display: flex;
     flex-direction: row;
-    gap: 4px;
+    gap: 6px;
   }
 
   .top {
@@ -112,6 +115,7 @@
     grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
     font-size: 16px;
+    max-width: 400px;
 
     .label {
       color: hsl(0, 0%, 70%);

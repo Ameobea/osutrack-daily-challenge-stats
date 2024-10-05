@@ -166,6 +166,7 @@ export interface UserDailyChallengeStats {
   best_placement_absolute: BestPlacement | null;
   best_placement_percentile: BestPlacement | null;
   best_placement_score: BestPlacement | null;
+  best_placement_pp: BestPlacement | null;
   most_used_mods: [Mod | null, number][];
 }
 
@@ -200,6 +201,7 @@ export interface BestPlacement {
   rank: number;
   total_rankings: number;
   percentile: number;
+  pp?: number | null;
 }
 
 export const fetchUserDailyChallengeStats = (
@@ -221,12 +223,30 @@ export const fetchDailyChallengeRankings = (
 ): Promise<{ rankings: DailyChallengeRanking[]; total_rankings: number }> =>
   fetch(`${API_BASE_URL}/daily-challenge/rankings?page=${page}`).then(res => res.json());
 
+export interface MinimalGlobalChallengeDescriptor {
+  day_id: number;
+  beatmap_id: number;
+  title: string;
+  difficulty_name: string;
+  mapper_user_id: number;
+  mapper_username: string;
+  stars: number;
+  date_ranked: string;
+  length_seconds: number;
+}
+
 export interface GlobalDailyChallengeStats {
   total_unique_participants: number;
   total_combined_score: number;
   total_rankings: number;
   total_challenges: number;
   map_stats: MapStats;
+}
+
+export interface TopPPPlay {
+  score: DailyChallengeScore;
+  total_scores_for_day: number;
+  username: string;
 }
 
 export interface MapStats {
@@ -238,6 +258,13 @@ export interface MapStats {
   cs_distribution: Histogram;
   top_mappers: TopMapper[];
   top_required_mods: [Mod[], number][];
+  easiest_map: MinimalGlobalChallengeDescriptor;
+  hardest_map: MinimalGlobalChallengeDescriptor;
+  shortest_map: MinimalGlobalChallengeDescriptor;
+  longest_map: MinimalGlobalChallengeDescriptor;
+  oldest_map: MinimalGlobalChallengeDescriptor;
+  newest_map: MinimalGlobalChallengeDescriptor;
+  top_pp_plays: TopPPPlay[];
 }
 
 export interface TopMapper {

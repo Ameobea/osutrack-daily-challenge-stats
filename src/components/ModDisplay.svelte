@@ -175,7 +175,7 @@
   .root {
     display: flex;
     flex-direction: row;
-    gap: 4px;
+    gap: 1px;
     align-items: flex-end;
   }
 
@@ -185,6 +185,7 @@
 
   .mod-suffix {
     font-size: 13px;
+    margin-left: -4px;
   }
 
   .settings {

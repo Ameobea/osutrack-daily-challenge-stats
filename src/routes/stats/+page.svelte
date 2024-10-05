@@ -2,9 +2,11 @@
   import SvelteSeo from 'svelte-seo';
 
   import { renderHistogram } from '../../components/histogram';
-  import { IntegerFormatter, TotalScoreFormatter } from '../../util';
+  import { DateFormatter, IntegerFormatter, TotalScoreFormatter } from '../../util';
   import type { PageData } from './$types';
   import ModDisplay from '../../components/ModDisplay.svelte';
+  import MinMaxMapDisplay from './MinMaxMapDisplay.svelte';
+  import TopPpPlaysGrid from './TopPPPlaysGrid.svelte';
 
   export let data: PageData;
   $: stats = data.stats;
@@ -161,10 +163,23 @@
     <div>
       <div class="title">Star Distribution</div>
       <div class="histogram" bind:this={histogram1Ref}></div>
+      <MinMaxMapDisplay
+        minMap={stats.map_stats.easiest_map}
+        maxMap={stats.map_stats.hardest_map}
+        minLabel="Lowest Star Map"
+        maxLabel="Highest Star Map"
+      />
     </div>
     <div>
       <div class="title">Date Ranked Distribution</div>
       <div class="histogram" bind:this={histogram2Ref}></div>
+      <MinMaxMapDisplay
+        minMap={stats.map_stats.oldest_map}
+        maxMap={stats.map_stats.newest_map}
+        minLabel="Oldest Map"
+        maxLabel="Newest Map"
+        formatValue={map => `Ranked on ${DateFormatter.format(new Date(map.date_ranked))}`}
+      />
     </div>
     <div>
       <div class="title">CS Distribution</div>
@@ -181,6 +196,17 @@
     <div>
       <div class="title">Length Distribution</div>
       <div class="histogram" bind:this={histogram6Ref}></div>
+      <MinMaxMapDisplay
+        minMap={stats.map_stats.shortest_map}
+        maxMap={stats.map_stats.longest_map}
+        minLabel="Shortest Map"
+        maxLabel="Longest Map"
+        formatValue={map => {
+          const minutes = Math.floor(map.length_seconds / 60);
+          const seconds = Math.floor(map.length_seconds % 60);
+          return `Length: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }}
+      />
     </div>
     <div>
       <div class="title">Most Featured Mappers</div>
@@ -219,6 +245,10 @@
       </div>
     </div>
   </div>
+  <div class="item">
+    <div class="title">Top PP Daily Challenges</div>
+    <TopPpPlaysGrid topPPPlays={stats.map_stats.top_pp_plays} />
+  </div>
 </div>
 
 <style lang="css">
@@ -239,18 +269,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 
-    & > div {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      border: 1px solid hsl(200, 10%, 15%);
-      padding: 6px 8px;
-
-      .title {
-        font-size: 16px;
-      }
-    }
-
     .scalar-stat {
       .value {
         text-align: center;
@@ -260,6 +278,25 @@
         margin-top: 16px;
       }
     }
+  }
+
+  .stats-grid > div,
+  .item {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: 1px solid hsl(200, 10%, 15%);
+    padding: 6px 8px;
+    max-width: calc(100vw - 20px);
+    overflow: hidden;
+
+    .title {
+      font-size: 16px;
+    }
+  }
+
+  .item {
+    margin-top: 16px;
   }
 
   .inline-list {

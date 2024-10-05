@@ -9,7 +9,6 @@
 
 <script lang="ts">
   import type { DailyChallengeHistoryEntry } from '../../../../api';
-  import { Colors } from '../../../../conf';
   import { colorPercentile, colorPlacement } from '../../../../util';
 
   export let stats: DailyChallengeHistoryEntry | undefined;
@@ -17,8 +16,9 @@
   export let day: number;
   export let isSelected: boolean;
   export let setIsSelected: () => void;
+  export let latestChallengeDayID: number;
 
-  $: isSelectable = !isSelected && !!day && dayID >= 20240725;
+  $: isSelectable = !isSelected && !!day && dayID >= 20240725 && dayID <= latestChallengeDayID;
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->

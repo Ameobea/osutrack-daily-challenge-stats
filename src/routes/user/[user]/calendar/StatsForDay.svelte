@@ -45,7 +45,7 @@
   let innerWidth = 550;
 
   $: if (statsForDay && histogramContainer) {
-    let svgWidth = Math.min(innerWidth, 500);
+    let svgWidth = Math.min(innerWidth - 20, 500);
     const svgHeight = Math.floor(svgWidth * 0.5);
     renderHistogram({
       histogramContainer,
@@ -137,6 +137,8 @@
 
   .histogram-container {
     z-index: 1;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   h2 {

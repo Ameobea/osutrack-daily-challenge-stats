@@ -1,24 +1,19 @@
-<script lang="ts" context="module">
-  const DateFormatter = new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-
-  const formatDayID = (dayID: number) => {
-    const date = dayIDToDate(dayID);
-    return DateFormatter.format(date);
-  };
-</script>
-
 <script lang="ts">
   import TooltipIcon from 'carbon-components-svelte/src/TooltipIcon/TooltipIcon.svelte';
   import Information from 'carbon-icons-svelte/lib/Information.svelte';
 
   import type { UserDailyChallengeStats } from '../../../api';
-  import { colorPlacement, dayIDToDate, IntegerFormatter } from '../../../util';
+  import {
+    colorPercentile,
+    colorPlacement,
+    dayIDToDate,
+    FloatFormatter,
+    formatDayID,
+    IntegerFormatter,
+  } from '../../../util';
   import { renderHistogram } from '../../../components/histogram';
   import ModDisplay from '../../../components/ModDisplay.svelte';
+  import BestPlacement from './BestPlacement.svelte';
 
   export let userID: number;
   export let username: string;
@@ -114,20 +109,22 @@
       </div>
       <div class="label">Total Score</div>
       <div class="value">{IntegerFormatter.format(stats.total_score_stats.total_score_sum)}</div>
-      <div class="label">Best Placement</div>
+      <div class="label">Best Placement (Rank)</div>
       <div class="value">
-        {#if stats.best_placement_absolute}
-          <span style:color={colorPlacement(stats.best_placement_absolute?.rank)}>
-            {IntegerFormatter.format(stats.best_placement_absolute.rank)}
+        <BestPlacement placement={stats.best_placement_absolute} {userID} />
+      </div>
+      <div class="label">Best Placement (Percentile)</div>
+      <div class="value">
+        {#if typeof stats.best_placement_percentile?.score === 'number'}
+          <span style:color={colorPercentile(stats.best_placement_percentile?.percentile)}>
+            {FloatFormatter.format(stats.best_placement_percentile.percentile)}%
           </span>
-          /{IntegerFormatter.format(stats.best_placement_absolute.total_rankings)} on&nbsp;
+          &nbsp;on&nbsp;
           <a
             href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats
-              .best_placement_absolute?.day_id}"
+              .best_placement_percentile.day_id}"
           >
-            {typeof stats.best_placement_absolute?.total_rankings === 'number'
-              ? formatDayID(stats.best_placement_absolute.day_id)
-              : '-'}
+            {formatDayID(stats.best_placement_percentile.day_id)}
           </a>
         {:else}
           -
@@ -142,6 +139,22 @@
               .day_id}"
           >
             {formatDayID(stats.best_placement_score.day_id)}
+          </a>
+        {:else}
+          -
+        {/if}
+      </div>
+      <div class="label">Highest PP</div>
+      <div class="value">
+        {#if typeof stats.best_placement_pp?.score === 'number'}
+          {typeof stats.best_placement_pp.pp === 'number'
+            ? stats.best_placement_pp.pp.toFixed(2)
+            : '-'} on&nbsp;
+          <a
+            href="/osutrack/daily-challenge/user/{userID}/calendar?day={stats.best_placement_pp
+              .day_id}"
+          >
+            {formatDayID(stats.best_placement_pp.day_id)}
           </a>
         {:else}
           -
@@ -198,10 +211,6 @@
     flex-direction: column;
     padding: 4px;
     min-width: min(100vw, 520px);
-  }
-
-  .top-stats {
-    margin-top: 24px;
   }
 
   .histograms,
@@ -316,9 +325,17 @@
       overflow-y: auto;
       overflow-x: visible;
     }
+
+    .top-stats {
+      margin-top: 24px;
+    }
   }
 
   @media (max-width: 600px) {
+    .top-stats {
+      margin-top: 8px;
+    }
+
     .stats-table {
       grid-template-columns: 1fr;
 
