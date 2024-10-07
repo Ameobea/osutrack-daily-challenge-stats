@@ -45,6 +45,12 @@ export const getRankColor = (rank: string): string => {
     return Colors.S;
   } else if (rank === 'A') {
     return Colors.A;
+  } else if (rank === 'B') {
+    return Colors.B;
+  } else if (rank === 'C') {
+    return Colors.C;
+  } else if (rank === 'D') {
+    return Colors.D;
   } else {
     return Colors.White;
   }

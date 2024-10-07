@@ -68,7 +68,7 @@
     {@const beatmap = statsForDay.descriptor.current_playlist_item.beatmap}
     <div class="content">
       <h2>{formattedDate}</h2>
-      <h3>
+      <h3 title="{beatmap.beatmapset.title} - [{beatmap.version}]">
         <a href={`https://osu.ppy.sh/b/${beatmap.id}`} target="_blank">
           {beatmap.beatmapset.title} - [{beatmap.version}]
         </a>

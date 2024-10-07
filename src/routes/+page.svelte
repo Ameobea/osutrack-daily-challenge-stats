@@ -67,10 +67,6 @@
 <div class="root">
   <h1>osu!track Daily Challenge Stats</h1>
   <div class="top">
-    <p style="font-style: italic; color: rgb(200, 200, 200)">
-      This site is still under active development. <br />Please feel free to leave feedback or
-      report any bugs in the <a href="https://discord.gg/T4d3Kmte" target="_blank">Discord</a>.
-    </p>
     <div class="search-container">
       <input
         type="text"

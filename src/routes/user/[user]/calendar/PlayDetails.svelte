@@ -15,6 +15,16 @@
 
 <div class="root">
   <h2>Your Score</h2>
+
+  <div class="top">
+    <div class="rank" style:color={getRankColor(score.rank)}>{score.rank}</div>
+    <div class="total-score">{IntegerFormatter.format(score.total_score)}</div>
+  </div>
+  <div class="mods">
+    {#each score.mods as mod}
+      <ModDisplay {mod} />
+    {/each}
+  </div>
   <div class="score-ranking">
     Rank <span style:color={colorPlacement(score.user_rank)}
       >{IntegerFormatter.format(score.user_rank)}</span
@@ -22,15 +32,6 @@
     <span style:color={colorPercentile((score.user_rank / totalScoresForDay) * 100)}>
       {FloatFormatter.format((score.user_rank / totalScoresForDay) * 100)}%)
     </span>
-  </div>
-  <div class="mods">
-    {#each score.mods as mod}
-      <ModDisplay {mod} />
-    {/each}
-  </div>
-  <div class="top">
-    <div class="rank" style:color={getRankColor(score.rank)}>{score.rank}</div>
-    <div class="total-score">{IntegerFormatter.format(score.total_score)}</div>
   </div>
   <div class="stats-table">
     <div>
@@ -86,13 +87,15 @@
     display: flex;
     flex-direction: row;
     gap: 6px;
+    margin-top: 1px;
+    margin-bottom: 2px;
   }
 
   .top {
     display: flex;
     flex-direction: row;
     gap: 8px;
-    line-height: 48px;
+    line-height: 38px;
   }
 
   .rank {
@@ -101,7 +104,6 @@
 
   .total-score {
     font-size: 32px;
-    margin-bottom: 8px;
     font-weight: 300;
   }
 
@@ -119,6 +121,7 @@
 
     .label {
       color: hsl(0, 0%, 70%);
+      font-size: 14px;
     }
   }
 </style>

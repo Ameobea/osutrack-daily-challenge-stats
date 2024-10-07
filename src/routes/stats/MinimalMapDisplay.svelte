@@ -8,7 +8,7 @@
 </script>
 
 <div class="root">
-  <div class="title">
+  <div class="title" title="{map.title} [{map.difficulty_name}]">
     <a target="_blank" href="https://osu.ppy.sh/b/{map.beatmap_id}">
       {map.title} [{map.difficulty_name}]
     </a>
@@ -20,13 +20,14 @@
   {#if formatValue}
     <div>{formatValue(map)}</div>
   {/if}
-  <div>On {formatDayID(map.day_id)}</div>
+  <div>Played on {formatDayID(map.day_id)}</div>
 </div>
 
 <style lang="css">
   .root {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   .title {

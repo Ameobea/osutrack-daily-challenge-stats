@@ -27,21 +27,23 @@
     flex-direction: row;
     justify-content: space-around;
     margin-bottom: 8px;
-    gap: 12px;
+    gap: 24px;
     padding-left: 8px;
     padding-right: 8px;
     max-width: 100%;
+    overflow: hidden;
 
     & > div {
       display: flex;
       flex-direction: column;
       flex: 1;
+      overflow: hidden;
     }
   }
 
   h4 {
     color: hsl(0, 0%, 60%);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     text-align: center;
   }
 </style>

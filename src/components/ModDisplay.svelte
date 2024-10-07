@@ -97,6 +97,10 @@
     spin_speed: { label: 'Spin Speed' },
     angle_sharpness: { label: 'Angle Sharpness' },
     seed: { label: 'Seed' },
+    start_scale: { label: 'Start Scale' },
+    combo_based_size: { label: 'Combo-Based Size' },
+    inverse_muting: { label: 'Inverse Muting', formatValue: (v: boolean) => (v ? 'Yes' : 'No') },
+    reflection: { label: 'Reflection', formatValue: (v: boolean) => (v ? 'Yes' : 'No') },
   };
 
   const formatMod = (

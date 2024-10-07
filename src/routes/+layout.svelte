@@ -23,9 +23,14 @@
 </QueryClientProvider>
 
 <style>
+  :global(body, html) {
+    background: #121212;
+  }
+
   .content {
     max-width: 1270px;
     margin: 0 auto;
+    background: #161616;
   }
 
   :global(a) {
