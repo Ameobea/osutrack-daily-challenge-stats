@@ -89,6 +89,7 @@
     gap: 6px;
     margin-top: 1px;
     margin-bottom: 2px;
+    align-items: center;
   }
 
   .top {

@@ -142,6 +142,7 @@
   import type { Mod } from '../api';
 
   export let mod: Mod;
+  export let style: string | undefined = undefined;
 
   $: formattedMod = formatMod(mod.settings);
 </script>
@@ -149,7 +150,7 @@
 <div class="root">
   {#if formattedMod.settings?.length}
     <TooltipDefinition direction="top">
-      <span class="mod-acronym" style={getModStyle(mod.acronym)}>
+      <span class="mod-acronym" style="{getModStyle(mod.acronym)}{style}">
         {mod.acronym}{#if formattedMod.suffix}
           <span class="mod-suffix">{formattedMod.suffix}</span>
         {/if}
@@ -166,7 +167,7 @@
       </div>
     </TooltipDefinition>
   {:else}
-    <span class="mod-acronym" style={getModStyle(mod.acronym)}>
+    <span class="mod-acronym" style="{getModStyle(mod.acronym)}{style}">
       {mod.acronym}
       {#if formattedMod.suffix}
         <span class="mod-suffix">{formattedMod.suffix}</span>

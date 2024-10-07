@@ -24,6 +24,7 @@
   import { renderHistogram } from '../../../../components/histogram';
   import RankingsTable from '../../../rankings/RankingsTable.svelte';
   import PlayDetails from './PlayDetails.svelte';
+  import ModDisplay from '../../../../components/ModDisplay.svelte';
 
   export let dayID: number;
   export let stats: DailyChallengeHistoryEntry | undefined;
@@ -79,6 +80,18 @@
           {beatmap.beatmapset.creator}
         </a>
       </p>
+      <div class="required-mods">
+        <div class="label">Required Mods:</div>
+        <div class="mods-list">
+          {#if statsForDay.descriptor.current_playlist_item.required_mods.length > 0}
+            {#each statsForDay.descriptor.current_playlist_item.required_mods as mod}
+              <ModDisplay {mod} style="font-size: 1rem;" />
+            {/each}
+          {:else}
+            <span style="color: hsl(0, 0%, 60%);">None</span>
+          {/if}
+        </div>
+      </div>
       <p>
         Total Scores Submitted: <b style="font-weight: 500">
           {PlaycountFormatter.format(statsForDay.total_scores)}
@@ -87,7 +100,7 @@
     </div>
 
     <div class="bottom">
-      <div style="display: flex; flex-direction: column; gap: 32px; margin-top: 26px;">
+      <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 14px;">
         {#if stats}
           <PlayDetails score={stats.score} totalScoresForDay={statsForDay.total_scores} />
         {:else}
@@ -130,7 +143,7 @@
 
   .content {
     z-index: 1;
-    background-color: hsla(200, 10%, 15%, 75%);
+    background-color: hsla(200, 10%, 15%, 79%);
     padding: 14px 20px;
     height: 250px;
   }
@@ -139,6 +152,7 @@
     z-index: 1;
     padding-left: 8px;
     padding-right: 8px;
+    margin-top: 8px;
   }
 
   h2 {
@@ -162,6 +176,19 @@
 
   ::global(.histogram-bar) {
     stroke: #fff;
+  }
+
+  .required-mods {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    font-size: 1rem;
+
+    .mods-list {
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
+    }
   }
 
   .bottom {
