@@ -62,9 +62,15 @@ export const DateFormatter = new Intl.DateTimeFormat(undefined, {
   day: 'numeric',
 });
 
-export const formatDayID = (dayID: number) => {
+const NumericDayFormatter = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+export const formatDayID = (dayID: number, numeric = false) => {
   const date = dayIDToDate(dayID);
-  return DateFormatter.format(date);
+  return (numeric ? NumericDayFormatter : DateFormatter).format(date);
 };
 
 export const IntegerFormatter = new Intl.NumberFormat(undefined, {

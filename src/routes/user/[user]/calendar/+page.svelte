@@ -1,10 +1,12 @@
 <script lang="ts">
   import { queryParam } from 'sveltekit-search-params';
+  import SvelteSeo from 'svelte-seo';
 
   import Calendar from './Calendar.svelte';
   import type { PageData } from './$types';
   import StatsForDay from './StatsForDay.svelte';
   import type { DailyChallengeHistoryEntry } from '../../../../api';
+  import { formatDayID } from '../../../../util';
 
   export let data: PageData;
   $: statsByDayID = data.history.reduce(
@@ -20,7 +22,25 @@
     encode: (value: number | null) => (value ? value.toString() : undefined),
   });
   const setSelectedDayID = (dayID: number) => selectedDayID.set(dayID);
+
+  $: metadata = (() => {
+    if ($selectedDayID) {
+      return {
+        title: `${data.username} | ${formatDayID($selectedDayID, true)} Daily Challenge Stats`,
+        description: `osu! daily challenge stats for ${data.username} on ${formatDayID($selectedDayID, true)}`,
+      };
+    } else {
+      return {
+        title: `${data.username} | Daily Challenge Calendar`,
+        description: `osu! daily challenge calendar for ${data.username}`,
+      };
+    }
+  })();
+  $: title = metadata.title;
+  $: description = metadata.description;
 </script>
+
+<SvelteSeo {title} {description} openGraph={{ title, description }} />
 
 <div class="root">
   <Calendar

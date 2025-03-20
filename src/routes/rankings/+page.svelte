@@ -46,16 +46,12 @@
 
   $: rankings =
     $pageNumber === initialPageNumber ? data.rankings : ($res.data?.rankings ?? lastRankings);
+
+  $: title = `osu!track Daily Challenge Rankings${($pageNumber || 0) > 1 ? ` - Page ${$pageNumber}` : ''}`;
+  const description = 'Global rankings for the osu! daily challenge';
 </script>
 
-<SvelteSeo
-  title="osu!track Daily Challenge Rankings"
-  description="Global rankings for the osu! daily challenge"
-  openGraph={{
-    title: 'osu!track Daily Challenge Rankings',
-    description: 'Global rankings for the osu! daily challenge',
-  }}
-/>
+<SvelteSeo {title} {description} openGraph={{ title, description }} />
 
 <div class="root">
   <h1>Daily Challenge Rankings</h1>

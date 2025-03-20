@@ -27,7 +27,6 @@
 
 <script lang="ts">
   import { Tabs, Tab, TileGroup, RadioTile } from 'carbon-components-svelte';
-  import SvelteSeo from "svelte-seo";
   import { goto, preloadData } from '$app/navigation';
   import { page } from '$app/stores';
 
@@ -60,12 +59,6 @@
 </script>
 
 <svelte:window bind:innerWidth />
-
-<SvelteSeo
-  title="{username} | Daily Challenge Stats"
-  description="osu! daily challenge stats for {username}"
-  openGraph={{ title: `${username} | Daily Challenge Stats`, description: `osu! daily challenge stats for ${username}` }}
-/>
 
 <div class="side-header">
   <h2>

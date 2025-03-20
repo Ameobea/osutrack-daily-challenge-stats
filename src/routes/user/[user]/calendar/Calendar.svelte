@@ -15,6 +15,7 @@
   export let latestChallengeDayID: number;
 
   const initialSelectedDayID = selectedDayID;
+  const latestChallengeDate = dayIDToDate(latestChallengeDayID);
   const now = initialSelectedDayID
     ? dayIDToDate(initialSelectedDayID)
     : dayIDToDate(latestChallengeDayID);
@@ -43,7 +44,8 @@
   </h1>
 
   <button
-    disabled={curYear >= now.getFullYear() && curMonth >= now.getMonth()}
+    disabled={curYear >= latestChallengeDate.getFullYear() &&
+      curMonth >= latestChallengeDate.getMonth()}
     on:click={() => {
       curMonth += 1;
       if (curMonth > 11) {
