@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { fetchDailyChallengeTotalScoreRankings } from '../../api';
+
+import { fetchDailyChallengeTopPercentRankings } from '../../../api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, url: { searchParams } }) => {
@@ -9,10 +10,13 @@ export const load: PageServerLoad = async ({ fetch, url: { searchParams } }) => 
   }
 
   const page = Math.max(+(rawPageNumber ?? 1), 1);
-  const { rankings, total_rankings: totalRankings } = await fetchDailyChallengeTotalScoreRankings(
+  const { rankings, total_rankings: totalRankings } = await fetchDailyChallengeTopPercentRankings(
     fetch,
+    50,
     page
   );
-
-  return { rankings: rankings.map(rank => ({ ...rank, value: rank.total_score })), totalRankings };
+  return {
+    rankings: rankings.map(rank => ({ ...rank, value: rank.top_percent_count })),
+    totalRankings,
+  };
 };

@@ -1,8 +1,9 @@
 <script lang="ts">
   import TooltipIcon from 'carbon-components-svelte/src/TooltipIcon/TooltipIcon.svelte';
+  import TooltipDefinition from 'carbon-components-svelte/src/TooltipDefinition/TooltipDefinition.svelte';
   import Information from 'carbon-icons-svelte/lib/Information.svelte';
 
-  import type { UserDailyChallengeStats } from '../../../api';
+  import type { DailyChallengeUserStats } from '../../../api';
   import { colorPercentile, FloatFormatter, formatDayID, IntegerFormatter } from '../../../util';
   import { renderHistogram } from '../../../components/histogram';
   import ModDisplay from '../../../components/ModDisplay.svelte';
@@ -10,7 +11,7 @@
 
   export let userID: number;
   export let username: string;
-  export let stats: UserDailyChallengeStats;
+  export let stats: DailyChallengeUserStats;
 
   let innerWidth = 550;
   let scoreHistogramContainer: HTMLDivElement;
@@ -19,7 +20,7 @@
   $: modsListExpanded =
     modsListManuallyExpanded || stats.most_used_mods.length <= 5 || innerWidth > 600;
 
-  $: svgWidth = Math.min(innerWidth - 10, 500);
+  $: svgWidth = Math.min(innerWidth - 10, 400);
   $: svgHeight = Math.floor(svgWidth * 0.5);
 
   $: if (scoreHistogramContainer) {
@@ -177,6 +178,140 @@
             {:else}
               -
             {/if}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="stats-table">
+      <tbody>
+        <tr>
+          <td class="label">Top 50% Count</td>
+          <td class="value">
+            {IntegerFormatter.format(stats.top_50_percent_count)}
+            {#if typeof stats.top_50_percent_rank === 'number'}
+              (<a
+                href="/osutrack/daily-challenge/rankings/top_50p{(() => {
+                  const pageSize = 50;
+                  const pageNumber = Math.floor((stats.top_50_percent_rank - 1) / pageSize);
+                  return pageNumber > 0 ? `?page=${pageNumber + 1}` : '';
+                })()}#username={encodeURIComponent(username)}"
+              >
+                #{IntegerFormatter.format(stats.top_50_percent_rank)}</a
+              >)
+            {/if}
+          </td>
+        </tr>
+        <tr>
+          <td class="label">Top 10% Count</td>
+          <td class="value">
+            {IntegerFormatter.format(stats.top_10_percent_count)}
+            {#if typeof stats.top_10_percent_rank === 'number'}
+              (<a
+                href="/osutrack/daily-challenge/rankings/top_10p{(() => {
+                  const pageSize = 50;
+                  const pageNumber = Math.floor((stats.top_10_percent_rank - 1) / pageSize);
+                  return pageNumber > 0 ? `?page=${pageNumber + 1}` : '';
+                })()}#username={encodeURIComponent(username)}"
+              >
+                #{IntegerFormatter.format(stats.top_10_percent_rank)}</a
+              >)
+            {/if}
+          </td>
+        </tr>
+        <tr>
+          <td class="label">Top 1% Count</td>
+          <td class="value">
+            {IntegerFormatter.format(stats.top_1_percent_count)}
+            {#if typeof stats.top_1_percent_rank === 'number'}
+              (<a
+                href="/osutrack/daily-challenge/rankings/top_1p{(() => {
+                  const pageSize = 50;
+                  const pageNumber = Math.floor((stats.top_1_percent_rank - 1) / pageSize);
+                  return pageNumber > 0 ? `?page=${pageNumber + 1}` : '';
+                })()}#username={encodeURIComponent(username)}"
+              >
+                #{IntegerFormatter.format(stats.top_1_percent_rank)}</a
+              >)
+            {/if}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="stats-table">
+      <tbody>
+        <tr>
+          <td class="label">Top 50% Streak</td>
+          <td class="value streak-cols">
+            <div>
+              Best: {#if stats.streaks.best_top_50_percent_streak_span}
+                <TooltipDefinition direction="top">
+                  <span style="font-size: 14px">
+                    {IntegerFormatter.format(stats.streaks.best_top_50_percent_streak)}
+                  </span>
+
+                  <span slot="tooltip">
+                    {formatDayID(stats.streaks.best_top_50_percent_streak_span[0])} - {formatDayID(
+                      stats.streaks.best_top_50_percent_streak_span[1]
+                    )}
+                  </span>
+                </TooltipDefinition>
+              {:else}
+                <span style="font-size: 14px">
+                  {IntegerFormatter.format(stats.streaks.best_top_50_percent_streak)}
+                </span>
+              {/if}
+            </div>
+            <div>Current: {IntegerFormatter.format(stats.streaks.cur_top_50_percent_streak)}</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="label">Top 10% Streak</td>
+          <td class="value streak-cols">
+            <div>
+              Best: {#if stats.streaks.best_top_10_percent_streak_span}
+                <TooltipDefinition direction="top">
+                  <span style="font-size: 14px">
+                    {IntegerFormatter.format(stats.streaks.best_top_10_percent_streak)}
+                  </span>
+
+                  <span slot="tooltip">
+                    {formatDayID(stats.streaks.best_top_10_percent_streak_span[0])} - {formatDayID(
+                      stats.streaks.best_top_10_percent_streak_span[1]
+                    )}
+                  </span>
+                </TooltipDefinition>
+              {:else}
+                <span style="font-size: 14px">
+                  {IntegerFormatter.format(stats.streaks.best_top_10_percent_streak)}
+                </span>
+              {/if}
+            </div>
+            <div>Current: {IntegerFormatter.format(stats.streaks.cur_top_10_percent_streak)}</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="label">Top 1% Streak</td>
+          <td class="value streak-cols">
+            <div>
+              Best: {#if stats.streaks.best_top_1_percent_streak_span}
+                <TooltipDefinition direction="top">
+                  <span style="font-size: 14px">
+                    {IntegerFormatter.format(stats.streaks.best_top_1_percent_streak)}
+                  </span>
+
+                  <span slot="tooltip">
+                    {formatDayID(stats.streaks.best_top_1_percent_streak_span[0])} - {formatDayID(
+                      stats.streaks.best_top_1_percent_streak_span[1]
+                    )}
+                  </span>
+                </TooltipDefinition>
+              {:else}
+                <span style="font-size: 14px">
+                  {IntegerFormatter.format(stats.streaks.best_top_1_percent_streak)}
+                </span>
+              {/if}
+            </div>
+            <div>Current: {IntegerFormatter.format(stats.streaks.cur_top_1_percent_streak)}</div>
           </td>
         </tr>
       </tbody>
@@ -373,6 +508,16 @@
 
   .top-mods-list-wrapper.expanded {
     max-height: none;
+  }
+
+  .streak-cols {
+    display: flex;
+    flex-direction: row;
+
+    > div {
+      flex: 1;
+      max-width: calc(max(40%, 100px));
+    }
   }
 
   @media (min-width: 601px) {

@@ -114,6 +114,8 @@
         }
       },
     },
+    repulsion_strength: { label: 'Repulsion Strength' },
+    size_multiplier: { label: 'Size Multiplier' },
   };
 
   const formatMod = (

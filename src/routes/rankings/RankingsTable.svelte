@@ -2,21 +2,22 @@
   import { Pagination } from 'carbon-components-svelte';
   import type { Writable } from 'svelte/store';
 
-  import type { DailyChallengeRanking } from '../../api';
+  import type { GenericRanking } from '../../api';
   import { IntegerFormatter, TotalScoreFormatter } from '../../util';
 
-  export let rankings: DailyChallengeRanking[] | null | undefined;
+  export let rankings: GenericRanking[] | null | undefined;
   export let highlightedUsername: string | null | undefined = undefined;
   export let totalRankings: number;
   export let pageNumber: Writable<number | null>;
+  export let valueTitle: string;
 </script>
 
 <div class="rankings-table">
   <div class="first header">Rank</div>
   <div class="header">Username</div>
-  <div class="last header">Total Score</div>
+  <div class="last header">{valueTitle}</div>
   {#if rankings}
-    {#each rankings as { rank, username, total_score, user_id }}
+    {#each rankings as { rank, username, value, user_id }}
       {@const highlighted = username === highlightedUsername ? 'true' : undefined}
       <div data-highlighted={highlighted} class="first rank">
         #{IntegerFormatter.format(rank)}
@@ -24,8 +25,8 @@
       <div data-username={username} data-highlighted={highlighted} class="username">
         <a href="/osutrack/daily-challenge/user/{user_id}">{username}</a>
       </div>
-      <div data-highlighted={highlighted} class="last" title={IntegerFormatter.format(total_score)}>
-        {TotalScoreFormatter.format(total_score)}
+      <div data-highlighted={highlighted} class="last" title={IntegerFormatter.format(value)}>
+        {value > 1_000_000 ? TotalScoreFormatter.format(value) : IntegerFormatter.format(value)}
       </div>
     {/each}
   {:else}

@@ -154,15 +154,19 @@ export const getUserDailyChallengeForDay = (
 ): Promise<DailyChallengeScore> =>
   fetch(`${API_BASE_URL}/daily-challenge/user/${userID}/day/${dayID}`).then(res => res.json());
 
-export interface UserDailyChallengeStats {
+export interface DailyChallengeUserStats {
   total_participation: number;
   total_challenge_count: number;
   total_score_stats: TotalScoreStats;
   score_distribution: ScoreDistribution;
   time_of_day_distribution: TimeOfDayDistribution;
   streaks: Streaks;
+  top_1_percent_count: number;
+  top_1_percent_rank: number | null;
   top_10_percent_count: number;
+  top_10_percent_rank: number | null;
   top_50_percent_count: number;
+  top_50_percent_rank: number | null;
   best_placement_absolute: BestPlacement | null;
   best_placement_percentile: BestPlacement | null;
   best_placement_score: BestPlacement | null;
@@ -193,6 +197,15 @@ export interface Streaks {
   cur_weekly_streak: number;
   best_daily_streak: number;
   best_weekly_streak: number;
+  cur_top_1_percent_streak: number;
+  best_top_1_percent_streak: number;
+  best_top_1_percent_streak_span: [number, number] | null;
+  cur_top_10_percent_streak: number;
+  best_top_10_percent_streak: number;
+  best_top_10_percent_streak_span: [number, number] | null;
+  cur_top_50_percent_streak: number;
+  best_top_50_percent_streak: number;
+  best_top_50_percent_streak_span: [number, number] | null;
 }
 
 export interface BestPlacement {
@@ -207,7 +220,7 @@ export interface BestPlacement {
 export const fetchUserDailyChallengeStats = (
   fetch: typeof window.fetch,
   userID: number
-): Promise<UserDailyChallengeStats> =>
+): Promise<DailyChallengeUserStats> =>
   fetch(`${API_BASE_URL}/daily-challenge/user/${userID}/stats`).then(res => res.json());
 
 export interface DailyChallengeRanking {
@@ -217,11 +230,34 @@ export interface DailyChallengeRanking {
   total_score: number;
 }
 
-export const fetchDailyChallengeRankings = (
+export interface DailyChallengePercentRankingEntry {
+  user_id: number;
+  username: string;
+  rank: number;
+  top_percent_count: number;
+}
+
+export interface GenericRanking {
+  user_id: number;
+  username: string;
+  rank: number;
+  value: number;
+}
+
+export const fetchDailyChallengeTotalScoreRankings = (
   fetch: typeof window.fetch,
   page: number
 ): Promise<{ rankings: DailyChallengeRanking[]; total_rankings: number }> =>
   fetch(`${API_BASE_URL}/daily-challenge/rankings?page=${page}`).then(res => res.json());
+
+export const fetchDailyChallengeTopPercentRankings = (
+  fetch: typeof window.fetch,
+  percent: 50 | 10 | 1,
+  page: number
+): Promise<{ rankings: DailyChallengePercentRankingEntry[]; total_rankings: number }> =>
+  fetch(`${API_BASE_URL}/daily-challenge/rankings/percent/${percent}?page=${page}`).then(res =>
+    res.json()
+  );
 
 export interface MinimalGlobalChallengeDescriptor {
   day_id: number;

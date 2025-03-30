@@ -1,73 +1,41 @@
 <script lang="ts">
-  import { useQuery } from '@sveltestack/svelte-query';
-  import { queryParam } from 'sveltekit-search-params';
   import SvelteSeo from 'svelte-seo';
-  import { page } from '$app/stores';
 
-  import { fetchDailyChallengeRankings, type DailyChallengeRanking } from '../../api';
-  import type { PageData } from './$types';
-  import RankingsTable from './RankingsTable.svelte';
+  import type { PageData } from '../$types';
+  import { fetchDailyChallengeTotalScoreRankings } from '../../api';
+  import RankingsPage from './RankingsPage.svelte';
+  import { queryParam } from 'sveltekit-search-params';
 
   export let data: PageData;
 
-  const initialPageNumber = Math.max(+($page.url.searchParams.get('page') || '1'), 1);
-  let didScrollIntoView = false;
-  let highlightedUsername: string | null = null;
-  $: if (!didScrollIntoView) {
-    const hash = $page.url.hash;
-    // we have to implement our own scrolling logic because the default hash-based scrolling
-    // doesn't work with Sveltekit's client-side navigation
-    if (hash.startsWith('#username=')) {
-      highlightedUsername = decodeURIComponent(hash.slice(10));
-      didScrollIntoView = true;
-      setTimeout(
-        () =>
-          void document
-            .querySelector(`[data-username="${highlightedUsername}"]`)
-            ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-        100
-      );
-    }
-  }
+  const fetchRankings = async (fetch: typeof window.fetch, page: number) =>
+    fetchDailyChallengeTotalScoreRankings(fetch, page).then(({ total_rankings, rankings }) => ({
+      totalRankings: total_rankings,
+      rankings: rankings.map(rank => ({ ...rank, value: rank.total_score })),
+    }));
 
   let pageNumber = queryParam<number>('page', {
     encode: v => v.toString(),
     decode: (v): number => (typeof v === 'string' ? +v : 1),
   });
-  $: res = useQuery(
-    ['rankings', $pageNumber],
-    () => fetchDailyChallengeRankings(fetch, $pageNumber ?? 1),
-    { keepPreviousData: true }
-  );
-  let lastRankings: DailyChallengeRanking[] | undefined;
-  $: if ($res.data) {
-    lastRankings = $res.data.rankings;
-  }
-
-  $: rankings =
-    $pageNumber === initialPageNumber ? data.rankings : ($res.data?.rankings ?? lastRankings);
-
   $: title = `osu!track Daily Challenge Rankings${($pageNumber || 0) > 1 ? ` - Page ${$pageNumber}` : ''}`;
   const description = 'Global rankings for the osu! daily challenge';
 </script>
 
 <SvelteSeo {title} {description} openGraph={{ title, description }} />
 
-<div class="root">
-  <h1>Daily Challenge Rankings</h1>
-  <RankingsTable {rankings} {highlightedUsername} {pageNumber} totalRankings={data.totalRankings} />
+<div style="display: flex; justify-content: center; text-align:center">
+  <h1>Daily Challenge Total Score Rankings</h1>
 </div>
+<RankingsPage {data} {fetchRankings} valueTitle="Count" />
 
 <style lang="css">
-  .root {
-    display: flex;
-    flex-direction: column;
-  }
-
   h1 {
     text-align: center;
     margin-top: 16px;
     height: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   @media (max-width: 600px) {
