@@ -161,6 +161,8 @@ export interface DailyChallengeUserStats {
   score_distribution: ScoreDistribution;
   time_of_day_distribution: TimeOfDayDistribution;
   streaks: Streaks;
+  first_place_count: number;
+  first_place_rank: number | null;
   top_1_percent_count: number;
   top_1_percent_rank: number | null;
   top_10_percent_count: number;
@@ -252,10 +254,18 @@ export const fetchDailyChallengeTotalScoreRankings = (
 
 export const fetchDailyChallengeTopPercentRankings = (
   fetch: typeof window.fetch,
-  percent: 50 | 10 | 1,
+  percent: 100 | 50 | 10 | 1,
   page: number
 ): Promise<{ rankings: DailyChallengePercentRankingEntry[]; total_rankings: number }> =>
   fetch(`${API_BASE_URL}/daily-challenge/rankings/percent/${percent}?page=${page}`).then(res =>
+    res.json()
+  );
+
+export const fetchDailyChallengeTopFirstPlaceCountRankings = (
+  fetch: typeof window.fetch,
+  page: number
+): Promise<{ rankings: DailyChallengePercentRankingEntry[]; total_rankings: number }> =>
+  fetch(`${API_BASE_URL}/daily-challenge/rankings/first-place?page=${page}`).then(res =>
     res.json()
   );
 

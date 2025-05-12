@@ -241,6 +241,25 @@
             {/if}
           </td>
         </tr>
+        {#if stats.first_place_count > 0}
+          <tr>
+            <td class="label">First Place Count</td>
+            <td class="value">
+              {IntegerFormatter.format(stats.first_place_count)}
+              {#if typeof stats.first_place_rank === 'number'}
+                (<a
+                  href="/osutrack/daily-challenge/rankings/first_place{(() => {
+                    const pageSize = 50;
+                    const pageNumber = Math.floor((stats.first_place_rank - 1) / pageSize);
+                    return pageNumber > 0 ? `?page=${pageNumber + 1}` : '';
+                  })()}#username={encodeURIComponent(username)}"
+                >
+                  #{IntegerFormatter.format(stats.first_place_rank)}</a
+                >)
+              {/if}
+            </td>
+          </tr>
+        {/if}
       </tbody>
     </table>
     <table class="stats-table">
