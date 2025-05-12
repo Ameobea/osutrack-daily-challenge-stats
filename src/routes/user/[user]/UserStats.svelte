@@ -64,9 +64,15 @@
         <tr>
           <td class="label">Total Participation</td>
           <td class="value">
-            {IntegerFormatter.format(stats.total_participation)}/{IntegerFormatter.format(
-              stats.total_challenge_count
-            )}
+            <span
+              class={stats.total_participation === stats.total_challenge_count
+                ? 'rainbow-text'
+                : undefined}
+            >
+              {IntegerFormatter.format(stats.total_participation)}/{IntegerFormatter.format(
+                stats.total_challenge_count
+              )}
+            </span>
           </td>
         </tr>
         <tr>
@@ -565,5 +571,22 @@
     .histograms {
       justify-content: center;
     }
+  }
+
+  .rainbow-text {
+    background: linear-gradient(
+      270deg,
+      red,
+      orange,
+      yellow,
+      green,
+      rgb(0, 98, 255),
+      rgb(146, 22, 234),
+      violet,
+      rgb(237, 38, 16)
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 </style>

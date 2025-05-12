@@ -19,6 +19,7 @@
     fetchRankingsForDay,
     fetchStatsForDay,
     type DailyChallengeHistoryEntry,
+    type GenericRanking,
   } from '../../../../api';
   import { dayIDToDate } from '../../../../util';
   import { renderHistogram } from '../../../../components/histogram';
@@ -34,8 +35,10 @@
   $: statsForDay = $statsRes.data;
 
   let rankingsPageNumber = writable(1);
-  $: rankingsRes = useQuery(['rankings-for-day', dayID], async () =>
-    fetchRankingsForDay(fetch, dayID, $rankingsPageNumber)
+  $: rankingsRes = useQuery<GenericRanking[]>(['rankings-for-day', dayID], () =>
+    fetchRankingsForDay(fetch, dayID, $rankingsPageNumber).then(rankings =>
+      rankings.map(rank => ({ ...rank, value: rank.total_score }))
+    )
   );
 
   $: date = dayIDToDate(dayID);
@@ -113,6 +116,7 @@
         rankings={$rankingsRes.data}
         totalRankings={statsForDay.total_scores}
         highlightedUsername={username}
+        valueTitle="Total Score"
       />
     </div>
   {:else if $statsRes.isLoading}

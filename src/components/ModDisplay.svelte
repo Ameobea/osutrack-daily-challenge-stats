@@ -116,6 +116,39 @@
     },
     repulsion_strength: { label: 'Repulsion Strength' },
     size_multiplier: { label: 'Size Multiplier' },
+    classic_health: { label: 'Classic Health', formatValue: (v: boolean) => (v ? 'Yes' : 'No') },
+    classic_note_lock: {
+      label: 'Classic Note Lock',
+      formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
+    },
+    enable_metronome: {
+      label: 'Enable Metronome',
+      formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
+    },
+    fail_on_slider_tail: {
+      label: 'Fail on Slider Tail',
+      formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
+    },
+    extended_limits: {
+      label: 'Extended Limits',
+      formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
+    },
+    fade_hit_circle_early: {
+      label: 'Fade Hit Circle Early',
+      formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
+    },
+    initial_rate: {
+      label: 'Initial Rate',
+      formatValue: (v: number) => `${v}x`,
+    },
+    always_play_tail_sample: {
+      label: 'Always Play Tail Sample',
+      formatValue: (v: boolean) => (v ? 'Yes' : 'No'),
+    },
+    max_size_combo_count: {
+      label: 'Max Size Combo Count',
+      formatValue: (v: number) => `${v}`,
+    },
   };
 
   const formatMod = (
