@@ -38,11 +38,97 @@ export interface Mod {
   settings?: Record<string, any>;
 }
 
+interface HiscoreV2 {
+  mods: Mod[];
+  statistics: Statistics;
+  beatmap_id: number;
+  best_id: any;
+  id: number;
+  rank: string;
+  user_id: number;
+  accuracy: number;
+  build_id?: number | null;
+  ended_at: string;
+  has_replay: boolean;
+  is_perfect_combo: boolean;
+  legacy_perfect: boolean;
+  legacy_score_id?: number | null;
+  legacy_total_score?: number | null;
+  max_combo: number;
+  passed: boolean;
+  pp?: number | null;
+  ruleset_id: number;
+  started_at?: string | null;
+  total_score: number;
+  replay: boolean;
+  // beatmap: Beatmap;
+  // user: User;
+}
+
+export interface OsutrackDbBeatmap {
+  beatmapset_id: number;
+  beatmap_id: number;
+  approved: number;
+  approved_date: string | null;
+  last_update: string;
+  total_length: number;
+  hit_length: number;
+  version: string;
+  artist: string;
+  title: string;
+  creator: string;
+  bpm: number;
+  source: string;
+  difficultyrating: number;
+  diff_size: number;
+  diff_overall: number;
+  diff_approach: number;
+  diff_drain: number;
+  mode: number;
+}
+
+export interface BeatmapDifficulties {
+  score_id: string;
+  difficulty_aim: number;
+  difficulty_speed: number;
+  difficulty_flashlight: number;
+  speed_note_count: number;
+  slider_factor: number;
+  stars: number;
+}
+
+export interface OsuPerformanceAttributes {
+  pp: number;
+  pp_acc: number;
+  pp_aim: number;
+  pp_flashlight: number;
+  pp_speed: number;
+  effective_miss_count: number;
+  speed_deviation: number | null;
+}
+
+export interface FetchHiscoresResponse {
+  hiscores: HiscoreV2[];
+  beatmaps: Record<number, OsutrackDbBeatmap>;
+  difficulties: Record<number, BeatmapDifficulties>;
+  performance_attrs: Record<number, OsuPerformanceAttributes>;
+}
+
 export const fetchUsername = async (fetch: typeof window.fetch, userID: number): Promise<string> =>
   fetch(`${API_BASE_URL}/users/${userID}/username`).then(res => res.json());
 
 export const fetchUserID = async (fetch: typeof window.fetch, username: string): Promise<number> =>
   fetch(`${API_BASE_URL}/users/${username}/id?mode=0`).then(res => res.json());
+
+export const fetchUserHiscores = async (
+  fetch: typeof window.fetch,
+  userID: number,
+  mode: number,
+  limit: number = 200
+): Promise<FetchHiscoresResponse> =>
+  fetch(`${API_BASE_URL}/users/${userID}/hiscores/v2?mode=${mode}&limit=${limit}`).then(res =>
+    res.json()
+  );
 
 export const fetchUserDailyChallengeHistory = async (
   fetch: typeof window.fetch,

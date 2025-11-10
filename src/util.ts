@@ -1,4 +1,4 @@
-import { Colors } from './conf';
+import { Colors, OsuColors } from './conf';
 
 /**
  * Converts day IDs like 20240420 to `Date`s.

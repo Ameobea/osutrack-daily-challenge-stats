@@ -9,3 +9,14 @@ export const Colors = {
   D: '#FF5a5a',
   White: 'rgb(254, 254, 254)',
 };
+
+export const OsuColors = {
+  D: 'rgb(230, 8, 8)',
+  C: 'rgb(140, 39, 167)',
+  B: 'rgb(35, 52, 152)',
+  A: 'rgb(67, 159, 40)',
+  S: 'rgb(233, 190, 53)',
+  X: 'rgb(189, 149, 21)',
+  SH: 'rgb(157, 176, 180)',
+  XH: 'rgb(107, 146, 154)',
+};
