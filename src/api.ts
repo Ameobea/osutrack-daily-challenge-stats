@@ -38,7 +38,7 @@ export interface Mod {
   settings?: Record<string, any>;
 }
 
-interface HiscoreV2 {
+export interface HiscoreV2 {
   mods: Mod[];
   statistics: Statistics;
   beatmap_id: number;
@@ -107,11 +107,23 @@ export interface OsuPerformanceAttributes {
   speed_deviation: number | null;
 }
 
+export interface BeatmapAttrs {
+  cs: number;
+  ar: number;
+  od: number;
+  hp: number;
+  clock_rate: number;
+}
+
 export interface FetchHiscoresResponse {
   hiscores: HiscoreV2[];
   beatmaps: Record<number, OsutrackDbBeatmap>;
   difficulties: Record<number, BeatmapDifficulties>;
-  performance_attrs: Record<number, OsuPerformanceAttributes>;
+  performance_attrs: Record<
+    number,
+    { earned: OsuPerformanceAttributes; max: OsuPerformanceAttributes }
+  >;
+  attrs_with_mods: Record<number, BeatmapAttrs>;
 }
 
 export const fetchUsername = async (fetch: typeof window.fetch, userID: number): Promise<string> =>

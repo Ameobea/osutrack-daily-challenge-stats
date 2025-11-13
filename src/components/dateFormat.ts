@@ -1,11 +1,10 @@
-const nowMs = Date.now();
-
 export const formatDateDiff = (
   from: Date | number,
+  to: Date = new Date(),
   rtfOptions: Intl.RelativeTimeFormatOptions = { numeric: 'always' }
 ): string => {
   const fromMs = typeof from === 'number' ? from : from.getTime();
-  const toMs = nowMs;
+  const toMs = to.getTime();
 
   let delta = toMs - fromMs;
   const FIFTY_YEARS_MS = 50 * 365.25 * 24 * 60 * 60 * 1000;

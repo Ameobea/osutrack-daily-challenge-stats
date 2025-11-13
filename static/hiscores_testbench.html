@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>Hiscores Testbench</title>
+    <style>
+      #app {
+        width: 1240px;
+        max-width: 1240px;
+        min-width: 1240px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      body,table {
+        font-family: 'Oxygen', sans-serif;
+        color: rgb(85, 85, 85);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+       fetch('/osutrack/hiscores?user=7562902&mode=0')
+        .then(res => res.text())
+        .then(text => {
+          // script elements won't run when inserted with `.innerHTML = ...`, so we need to extract and run them manually
+          const div = document.createElement('div');
+          div.innerHTML = text;
+          document.getElementById('app').appendChild(div);
+          const scripts = div.getElementsByTagName('script');
+          for (let i = 0; i < scripts.length; i++) {
+            // scripts depend on `parentElement` being set correctly, so we need to create new script elements
+            const newScript = document.createElement('script');
+            newScript.innerHTML = scripts[i].innerHTML;
+            scripts[i].parentElement.replaceChild(newScript, scripts[i]);
+          }
+        });
+    </script>
+  </body>
+</html>

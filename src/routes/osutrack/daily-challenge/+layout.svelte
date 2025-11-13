@@ -3,8 +3,8 @@
   import { QueryClient, QueryClientProvider } from '@sveltestack/svelte-query';
   import 'carbon-components-svelte/css/g100.css';
 
-  import '../reset.css';
-  import { initSentry } from '../sentry';
+  import '../../../reset.css';
+  import { initSentry } from '../../../sentry';
   import { page } from '$app/stores';
 
   onMount(initSentry);

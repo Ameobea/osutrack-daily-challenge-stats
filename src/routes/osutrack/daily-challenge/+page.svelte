@@ -4,8 +4,8 @@
   import SvelteSeo from 'svelte-seo';
   import { goto, preloadData } from '$app/navigation';
 
-  import { fetchUserID } from '../api';
-  import { logError } from '../sentry';
+  import { fetchUserID } from '../../../api';
+  import { logError } from '../../../sentry';
 
   let searchValue = '';
   let searchFocused = false;

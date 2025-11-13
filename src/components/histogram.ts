@@ -4,6 +4,20 @@ import { IntegerFormatter } from '../util';
 
 const DefaultMargin = { top: 10, right: 30, bottom: 20, left: 25 };
 
+export interface RenderHistogramParams {
+  histogramContainer: HTMLDivElement;
+  histogramData: Histogram;
+  svgHeight: number;
+  svgWidth: number;
+  userScore?: number;
+  margin?: typeof DefaultMargin;
+  xAxisTickFormat?: (value: number) => string;
+  yAxisTicksCount?: number;
+  yAxisTickValues?: number[];
+  xAxisTickValues?: number[];
+  xAxisTickCount?: number;
+}
+
 export const renderHistogram = ({
   histogramContainer,
   histogramData,
@@ -16,19 +30,7 @@ export const renderHistogram = ({
   yAxisTickValues,
   xAxisTickValues,
   xAxisTickCount,
-}: {
-  histogramContainer: HTMLDivElement;
-  histogramData: Histogram;
-  svgHeight: number;
-  svgWidth: number;
-  userScore?: number;
-  margin?: typeof DefaultMargin;
-  xAxisTickFormat?: (value: number) => string;
-  yAxisTicksCount?: number;
-  yAxisTickValues?: number[];
-  xAxisTickValues?: number[];
-  xAxisTickCount?: number;
-}) => {
+}: RenderHistogramParams) => {
   histogramContainer.innerHTML = '';
 
   const svg = select(histogramContainer)
@@ -48,15 +50,16 @@ export const renderHistogram = ({
 
   const barWidth = width / histogramData.buckets.length;
 
-  g.selectAll('.histogram-bar')
-    .data(histogramData.buckets)
+  const bars = g
+    .selectAll('.histogram-bar')
+    .data(histogramData.buckets.map((d, i) => ({ value: d, index: i })))
     .enter()
     .append('rect')
     .attr('class', 'histogram-bar')
-    .attr('x', (_d, i) => i * barWidth)
-    .attr('y', d => y(d))
+    .attr('x', ({ index }) => index * barWidth)
+    .attr('y', ({ value }) => y(value))
     .attr('width', barWidth - 1)
-    .attr('height', d => height - y(d))
+    .attr('height', ({ value }) => height - y(value))
     .attr('fill', '#24a6c7');
 
   let xAxis = axisBottom(x).tickFormat(x =>
@@ -112,4 +115,6 @@ export const renderHistogram = ({
   }
 
   g.append('g').call(yAxis);
+
+  return { bars };
 };

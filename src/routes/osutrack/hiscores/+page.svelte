@@ -1,135 +1,146 @@
 <script lang="ts">
-  import { formatDateDiff } from '../../../components/dateFormat';
-  import ModDisplay from '../../../components/ModDisplay.svelte';
-  import { OsuColors } from '../../../conf';
-  import { FloatFormatter } from '../../../util';
   import type { PageData } from './$types';
+  import type { RichHiscore } from './+page.server';
+  import HiscoreTable from './HiscoreTable.svelte';
+  import ScoreDetails from './ScoreDetails.svelte';
+  import StatsExplorer from './StatsExplorer.svelte';
 
   let { data }: { data: PageData } = $props();
 
-  // TODO: always hide flashlight pp if all user hiscores have no flashlight pp
-  // TODO: click-to-sort headers for all columns
-  // TODO: toggle for advanced stats
-  // TODO: click to expand beatmap details
-  // TODO: aggregate stats (distributions for all stats (CS, PP, time map ranked, score time, etc.))
-  // TODO: table styling.  Should horizontal scroll on smaller screens and be passably working on mobile
+  let selectedScore = $state<RichHiscore | null>(null);
+  let isScoreDetailsCollapsed = $state<boolean>(false);
+  let filteredHiscores = $state<RichHiscore[] | null>(null);
+  let showStatsExplorer = $state(false);
+
+  const setSelectedScore = (score: RichHiscore | null) => {
+    selectedScore = score;
+    if (score !== null) {
+      isScoreDetailsCollapsed = false;
+    }
+  };
+
+  const toggleScoreDetailsCollapsed = () => {
+    isScoreDetailsCollapsed = !isScoreDetailsCollapsed;
+    if (isScoreDetailsCollapsed) {
+      selectedScore = null;
+    }
+  };
+
+  const toggleStatsExplorer = () => {
+    showStatsExplorer = !showStatsExplorer;
+    if (!showStatsExplorer) {
+      filteredHiscores = null;
+    } else {
+      selectedScore = null;
+      isScoreDetailsCollapsed = true;
+    }
+  };
+
+  const setFilteredHiscores = (hiscores: RichHiscore[] | null) => {
+    filteredHiscores = hiscores;
+    if (hiscores && selectedScore && !hiscores.includes(selectedScore)) {
+      selectedScore = null;
+    }
+  };
 </script>
 
 <div class="root">
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Beatmap</th>
-        <th>PP</th>
-        <th>Aim PP</th>
-        <th>Speed PP</th>
-        <th>Acc PP</th>
-        <th>FL PP</th>
-        <th>Date Submitted</th>
-        <th>Stars</th>
-        <th>Accuracy</th>
-        <th>Rank</th>
-        <th>Mods</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data.hiscores as hiscore, i (hiscore.id)}
-        <tr>
-          <td>{i + 1}</td>
-          <td>
-            <a href={`https://osu.ppy.sh/b/${hiscore.beatmap.beatmap_id}`} target="_blank">
-              {hiscore.beatmap.title}
-              <span class="beatmap-version">[{hiscore.beatmap.version}]</span>
-            </a>
-          </td>
-          <td>{typeof hiscore.pp === 'number' ? FloatFormatter.format(hiscore.pp) : '-'}</td>
-          <td>
-            {typeof hiscore.perf?.pp_aim === 'number'
-              ? FloatFormatter.format(hiscore.perf.pp_aim)
-              : '-'}
-          </td>
-          <td>
-            {typeof hiscore.perf?.pp_speed === 'number'
-              ? FloatFormatter.format(hiscore.perf.pp_speed)
-              : '-'}
-          </td>
-          <td>
-            {typeof hiscore.perf?.pp_acc === 'number'
-              ? FloatFormatter.format(hiscore.perf.pp_acc)
-              : '-'}
-          </td>
-          <td>
-            {typeof hiscore.perf?.pp_flashlight === 'number'
-              ? FloatFormatter.format(hiscore.perf.pp_flashlight)
-              : '-'}
-          </td>
-          <td>
-            <span class="date-diff" title={hiscore.ended_at}>
-              {formatDateDiff(new Date(hiscore.ended_at))}
-            </span>
-          </td>
-          <td
-            >{hiscore.difficulty
-              ? hiscore.difficulty.stars.toFixed(2)
-              : hiscore.beatmap.difficultyrating.toFixed(2)}</td
-          >
-          <td>{(hiscore.accuracy * 100).toFixed(2)}%</td>
-          <td>
-            <span class="rank" style="color: {OsuColors[hiscore.rank as keyof typeof OsuColors]}">
-              {hiscore.rank}
-            </span>
-          </td>
-          <td>
-            <div style="display: flex; flex-direction: row; gap: 4px">
-              {#each hiscore.mods as mod}
-                <ModDisplay {mod} />
-              {/each}
-            </div>
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
+  <div class="controls">
+    {#if !showStatsExplorer}
+      <button class="open-stats-btn" onclick={toggleStatsExplorer}>Show Advanced Stats</button>
+    {:else}
+      <div class="stats-explorer-wrapper">
+        <button class="close-stats-btn" onclick={toggleStatsExplorer} title="Close stats explorer">
+          ×
+        </button>
+        <StatsExplorer hiscores={data.hiscores} {setFilteredHiscores} mode={data.mode} />
+      </div>
+    {/if}
+  </div>
+
+  <div class="table-contents">
+    <HiscoreTable
+      hiscores={filteredHiscores ?? data.hiscores}
+      {selectedScore}
+      {setSelectedScore}
+      bind:showAdvancedStats={showStatsExplorer}
+      mode={data.mode}
+    />
+    <ScoreDetails
+      {selectedScore}
+      isCollapsed={isScoreDetailsCollapsed}
+      toggleCollapsed={toggleScoreDetailsCollapsed}
+      mode={data.mode}
+    />
+  </div>
 </div>
 
-<style lang="css">
+<style>
   .root {
     display: flex;
     flex-direction: column;
+    height: calc(max(65vh, 800px));
+    overflow: hidden;
+    margin-top: 14px;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
+  .controls {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
   }
 
-  /* alternate row colors */
-  tr:nth-child(odd) {
-    background-color: #f2f2f2;
-  }
-
-  td {
-    padding: 8px;
+  .open-stats-btn {
+    padding: 10px 20px;
+    background-color: #5cc9e4;
+    color: white;
     border: none;
-    text-align: left;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    align-self: flex-start;
   }
 
-  .beatmap-version {
-    color: #797979;
+  .open-stats-btn:hover {
+    background-color: #4db8d3;
   }
 
-  .date-diff {
-    text-decoration-line: underline;
-    text-decoration-style: dotted;
-    cursor: default;
+  .stats-explorer-wrapper {
+    position: relative;
   }
 
-  .rank {
-    font-weight: bold;
+  .close-stats-btn {
+    appearance: none;
+    all: unset;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    cursor: pointer;
+    padding: 4px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    height: 20px;
+    width: 20px;
+    z-index: 10;
+    border-radius: 4px;
   }
 
-  a {
-    color: rgb(85, 85, 85);
+  .close-stats-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #333;
+  }
+
+  .table-contents {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
 </style>
