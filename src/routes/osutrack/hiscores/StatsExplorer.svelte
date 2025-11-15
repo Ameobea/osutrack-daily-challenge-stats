@@ -99,6 +99,7 @@
     accuracy: {
       label: 'Accuracy',
       valueGetter: score => score.accuracy * 100,
+      xAxisTickFormat: value => value.toFixed(1) + '%',
     },
     cs: {
       label: 'CS',
