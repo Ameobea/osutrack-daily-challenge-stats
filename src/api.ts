@@ -132,7 +132,12 @@ export interface FetchHiscoresResponse {
 }
 
 export const fetchUsername = async (fetch: typeof window.fetch, userID: number): Promise<string> =>
-  fetch(`${API_BASE_URL}/users/${userID}/username`).then(res => res.json());
+  fetch(`${API_BASE_URL}/users/${userID}/username`).then(res => {
+    if (res.status === 404) {
+      return '<unknown user>';
+    }
+    return res.json();
+  });
 
 export const fetchUserID = async (fetch: typeof window.fetch, username: string): Promise<number> =>
   fetch(`${API_BASE_URL}/users/${username}/id?mode=0`).then(res => res.json());
