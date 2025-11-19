@@ -6,6 +6,7 @@
   import { FloatFormatter } from '../../../util';
   import type { RichHiscore } from './+page.server';
   import { browser } from '$app/environment';
+  import { submitAnalyticsEvent } from '../../../api';
 
   let {
     hiscores,
@@ -100,6 +101,10 @@
       sortColumn = column;
       sortAscending = false;
     }
+
+    setTimeout(() =>
+      submitAnalyticsEvent({ category: 'hiscore_table', subcategory: 'sort_column' })
+    );
   };
 
   let now = $state(new Date());
@@ -118,10 +123,6 @@
       }
     };
   });
-
-  // TODO: click to expand beatmap details
-  // TODO: aggregate stats (distributions for all stats (CS, PP, time map ranked, score time, etc.))
-  // TODO: table styling.  Should horizontal scroll on smaller screens and be passably working on mobile
 </script>
 
 {#snippet sortIcon(key: string)}

@@ -109,7 +109,7 @@
         } else if (v == 1) {
           return 'Standard';
         } else {
-          logError(`Unknown accuracy judge mode: ${v}`);
+          console.error(`Unknown accuracy judge mode: ${v}`);
           return 'Unknown';
         }
       },
@@ -188,7 +188,6 @@
 <script lang="ts">
   import { TooltipDefinition } from 'carbon-components-svelte';
   import type { Mod } from '../api';
-  import { getSentry, logError } from '../sentry';
 
   export let mod: Mod;
   export let style: string | undefined = undefined;

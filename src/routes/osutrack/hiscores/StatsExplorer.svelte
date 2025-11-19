@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { RichHiscore } from './+page.server';
   import { renderHistogram } from '../../../components/histogram';
-  import type { Histogram } from '../../../api';
+  import { submitAnalyticsEvent, type Histogram } from '../../../api';
 
   let {
     hiscores,
@@ -161,7 +161,6 @@
 
   let selectedStat = $state<StatKey>('pp');
   let selectedBucket = $state<number | null>(null);
-  let hoveredBucket = $state<number | null>(null);
   let hasInteracted = $state<boolean>(false);
   let mouseoutTimeout: number | null = null;
 
@@ -203,12 +202,18 @@
   const handleStatChange = (stat: StatKey) => {
     selectedStat = stat;
     selectedBucket = null;
-    hoveredBucket = null;
     setFilteredHiscores(null);
     tooltip = null;
     if (!hasInteracted) {
       hasInteracted = true;
     }
+
+    setTimeout(() =>
+      submitAnalyticsEvent({
+        category: 'hiscores_table',
+        subcategory: 'change_stats_explorer_stat',
+      })
+    );
   };
 
   const clearSelectedBucketClass = () => {
@@ -257,22 +262,17 @@
     };
 
     bars.on('mouseover', (event, { index: bucketIx }) => {
-      // Cancel any pending mouseout timeout
       if (mouseoutTimeout !== null) {
         clearTimeout(mouseoutTimeout);
         mouseoutTimeout = null;
       }
 
-      hoveredBucket = bucketIx;
       const rect = event.currentTarget.getBoundingClientRect();
       updateTooltip(bucketIx, rect);
     });
 
     bars.on('mouseout', () => {
-      // Add a small delay before processing mouseout
       mouseoutTimeout = window.setTimeout(() => {
-        hoveredBucket = null;
-        // If a bar is selected, show tooltip for selected bar
         if (selectedBucket !== null) {
           const selectedBar = histogramContainer!.querySelector(
             `rect.histogram-bar:nth-child(${selectedBucket + 1})`
@@ -292,6 +292,13 @@
       if (!hasInteracted) {
         hasInteracted = true;
       }
+
+      setTimeout(() =>
+        submitAnalyticsEvent({
+          category: 'hiscores_table',
+          subcategory: 'select_stats_explorer_bucket',
+        })
+      );
 
       if (selectedBucket === bucketIx) {
         selectedBucket = null;
@@ -317,7 +324,6 @@
       clickedBar.classList.add('selected');
       selectedBucket = bucketIx;
 
-      // Update tooltip for the selected bar
       const rect = clickedBar.getBoundingClientRect();
       updateTooltip(bucketIx, rect);
     });

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { submitAnalyticsEvent } from '../../../api';
   import type { PageData } from './$types';
   import type { RichHiscore } from './+page.server';
   import HiscoreTable from './HiscoreTable.svelte';
@@ -17,6 +18,10 @@
     if (score !== null) {
       isScoreDetailsCollapsed = false;
     }
+
+    setTimeout(() =>
+      submitAnalyticsEvent({ category: 'hiscores_table', subcategory: 'select_score' })
+    );
   };
 
   const toggleScoreDetailsCollapsed = () => {
@@ -24,6 +29,13 @@
     if (isScoreDetailsCollapsed) {
       selectedScore = null;
     }
+
+    setTimeout(() =>
+      submitAnalyticsEvent({
+        category: 'hiscores_table',
+        subcategory: 'toggle_score_details_collapsed',
+      })
+    );
   };
 
   const toggleStatsExplorer = () => {
@@ -34,6 +46,10 @@
       selectedScore = null;
       isScoreDetailsCollapsed = true;
     }
+
+    setTimeout(() =>
+      submitAnalyticsEvent({ category: 'hiscores_table', subcategory: 'toggle_stats_explorer' })
+    );
   };
 
   const setFilteredHiscores = (hiscores: RichHiscore[] | null) => {

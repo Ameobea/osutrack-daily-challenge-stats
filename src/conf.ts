@@ -20,3 +20,5 @@ export const OsuColors = {
   SH: 'rgb(157, 176, 180)',
   XH: 'rgb(107, 146, 154)',
 };
+
+export const ANALYTICS_SALT = '4rW9XKHcEKa6bolWry8k0LGW';
