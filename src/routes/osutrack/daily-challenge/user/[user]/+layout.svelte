@@ -31,6 +31,7 @@
   import { page } from '$app/stores';
 
   import type { LayoutData } from './$types';
+  import { submitAnalyticsEvent } from '../../../../../api';
 
   export let data: LayoutData;
   $: username = data.username;
@@ -39,6 +40,24 @@
   $: userID = $page.params.user;
 
   const handleTabSelected = (newSelectedTab: UserTab) => {
+    if (!userID) {
+      console.warn('No userID found in params when changing tab');
+      return;
+    }
+
+    const newSelectedTabName = (
+      {
+        [UserTab.Summary]: 'summary',
+        [UserTab.Calendar]: 'calendar',
+      } as Record<UserTab, string>
+    )[newSelectedTab];
+    setTimeout(() =>
+      submitAnalyticsEvent({
+        category: 'daily_challenge',
+        subcategory: `user_page_tab_select_${newSelectedTabName}`,
+      })
+    );
+
     // It's possible that we change tabs using a link in the page or other means.
     //
     // If so, we want to avoid overwriting any query params or hash that might have been added.
@@ -69,9 +88,18 @@
   <img src="https://ameobea.b-cdn.net/osutrack/Mixins/userImage.php?u={userID}" alt="User avatar" />
   {#if innerWidth >= 1920}
     <div class="tiles-container">
-      <TileGroup selected={activeTab.toString()} on:select={evt => handleTabSelected(+evt.detail as UserTab)}>
-        <RadioTile on:mouseenter={mkTabPrefetcher(UserTab.Summary)} value={UserTab.Summary.toString()}>Summary</RadioTile>
-        <RadioTile  on:mouseenter={mkTabPrefetcher(UserTab.Calendar)} value={UserTab.Calendar.toString()}>Calendar</RadioTile>
+      <TileGroup
+        selected={activeTab.toString()}
+        on:select={evt => handleTabSelected(+evt.detail as UserTab)}
+      >
+        <RadioTile
+          on:mouseenter={mkTabPrefetcher(UserTab.Summary)}
+          value={UserTab.Summary.toString()}>Summary</RadioTile
+        >
+        <RadioTile
+          on:mouseenter={mkTabPrefetcher(UserTab.Calendar)}
+          value={UserTab.Calendar.toString()}>Calendar</RadioTile
+        >
       </TileGroup>
     </div>
   {/if}

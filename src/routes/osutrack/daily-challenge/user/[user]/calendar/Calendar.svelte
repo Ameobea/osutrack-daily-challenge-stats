@@ -5,7 +5,7 @@
 <script lang="ts">
   import calendarize from 'calendarize';
 
-  import type { DailyChallengeHistoryEntry } from '../../../../../../api';
+  import { submitAnalyticsEvent, type DailyChallengeHistoryEntry } from '../../../../../../api';
   import { dayIDToDate } from '../../../../../../util';
   import CalendarCell from './CalendarCell.svelte';
 
@@ -29,6 +29,13 @@
   <button
     disabled={curYear <= 2024 && curMonth <= 6}
     on:click={() => {
+      setTimeout(() =>
+        submitAnalyticsEvent({
+          category: 'daily_challenge',
+          subcategory: 'calendar_month_navigate_previous',
+        })
+      );
+
       curMonth -= 1;
       if (curMonth < 0) {
         curMonth = 11;
@@ -47,6 +54,13 @@
     disabled={curYear >= latestChallengeDate.getFullYear() &&
       curMonth >= latestChallengeDate.getMonth()}
     on:click={() => {
+      setTimeout(() =>
+        submitAnalyticsEvent({
+          category: 'daily_challenge',
+          subcategory: 'calendar_month_navigate_next',
+        })
+      );
+
       curMonth += 1;
       if (curMonth > 11) {
         curMonth = 0;
@@ -68,7 +82,15 @@
         {dayID}
         {day}
         isSelected={dayID === selectedDayID}
-        setIsSelected={() => setSelectedDayID(dayID)}
+        setIsSelected={() => {
+          setTimeout(() =>
+            submitAnalyticsEvent({
+              category: 'daily_challenge',
+              subcategory: 'calendar_day_select',
+            })
+          );
+          setSelectedDayID(dayID);
+        }}
         {latestChallengeDayID}
       />
     {/each}

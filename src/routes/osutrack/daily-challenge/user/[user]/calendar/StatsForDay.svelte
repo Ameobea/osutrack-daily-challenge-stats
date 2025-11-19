@@ -106,8 +106,6 @@
       <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 14px;">
         {#if stats}
           <PlayDetails score={stats.score} totalScoresForDay={statsForDay.total_scores} />
-        {:else}
-          <div>Loading...</div>
         {/if}
         <div class="histogram-container" bind:this={histogramContainer}></div>
       </div>
