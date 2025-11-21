@@ -1,7 +1,14 @@
+build-wasm:
+  cd src/routes/osutrack/ladder-stats/data-decompressor && just build
+
 run:
+  just build-wasm
+
   yarn run dev --port 6889
 
 docker-build:
+  just build-wasm
+
   docker build -t osu-dc-track:latest .
 
 build-and-deploy:

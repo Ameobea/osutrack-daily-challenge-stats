@@ -504,3 +504,21 @@ export const submitBatchAnalyticsEvents = async (
     throw new Error(`Failed to submit batch analytics events: ${response.statusText}`);
   }
 };
+
+export interface SimulationConfig {
+  rank_to_pp: [number, number][]; // (u32, f32)[]
+  rank_to_decay: [number, number][]; // (u32, f32)[]
+  rank_to_density: [number, number][]; // (u32, f32)[]
+}
+
+export const getLadderSimulationConfig = async (
+  mode: number,
+  fetch: typeof window.fetch = window.fetch
+): Promise<SimulationConfig> =>
+  fetch(`${API_BASE_URL}/analysis/simulation-config?mode=${mode}`).then(res => res.json());
+
+export const getCompressedLadderStatsData = async (
+  mode: number,
+  fetch: typeof window.fetch = window.fetch
+): Promise<ArrayBuffer> =>
+  fetch(`${API_BASE_URL}/analysis/dataset?mode=${mode}`).then(res => res.arrayBuffer());

@@ -1,0 +1,343 @@
+<script lang="ts">
+  import type { SimulationConfig } from '../../../../api';
+  import { interpolateSorted } from '../utils';
+  import { IntegerFormatter } from '../../../../util';
+  import RankProjectionChart from './RankProjectionChart.svelte';
+
+  let { simulationConfig }: { simulationConfig: SimulationConfig } = $props();
+
+  let currentRank = $state(10000);
+  let daysToSimulate = $state(60);
+  let ppGained = $state(50);
+
+  const MAX_SIM_DAYS = 5 * 365;
+  const MIDPOINT_DAYS = 180;
+  const LOG_MIN_DAYS = Math.log10(1);
+  const LOG_MAX_DAYS = Math.log10(MAX_SIM_DAYS + 1);
+  const daysLogRange = LOG_MAX_DAYS - LOG_MIN_DAYS;
+  const pivotNormDays = (Math.log10(MIDPOINT_DAYS + 1) - LOG_MIN_DAYS) / daysLogRange;
+  const daySliderGamma = Math.log(pivotNormDays) / Math.log(0.5);
+
+  const sliderToDays = (value: number) => {
+    if (value <= 0) {
+      return 0;
+    }
+    const scaled = Math.pow(value, daySliderGamma);
+    const logDays = LOG_MIN_DAYS + scaled * daysLogRange;
+    const days = Math.round(10 ** logDays - 1);
+    return Math.min(MAX_SIM_DAYS, Math.max(0, days));
+  };
+
+  const daysToSlider = (days: number) => {
+    if (days <= 0) {
+      return 0;
+    }
+    const clamped = Math.min(MAX_SIM_DAYS, Math.max(0, days));
+    const logValue = Math.log10(clamped + 1);
+    const norm = (logValue - LOG_MIN_DAYS) / daysLogRange;
+    return Math.pow(norm, 1 / daySliderGamma);
+  };
+
+  const handleDaysSliderInput = (evt: Event) => {
+    const sliderValue = parseFloat((evt.target as HTMLInputElement).value);
+    daysToSimulate = sliderToDays(sliderValue);
+  };
+
+  const MAX_PP_GAIN = 5000;
+  const PP_LINEAR_MAX = 300;
+  const PP_LINEAR_PORTION = 0.55;
+  const PP_SLIDER_POWER = 2.25;
+
+  const sliderToPpGain = (value: number) => {
+    const clamped = Math.min(1, Math.max(0, value));
+    if (clamped === 0) {
+      return 0;
+    }
+    if (clamped <= PP_LINEAR_PORTION) {
+      const progress = clamped / PP_LINEAR_PORTION;
+      return Math.round(progress * PP_LINEAR_MAX);
+    }
+
+    const curvedProgress = (clamped - PP_LINEAR_PORTION) / (1 - PP_LINEAR_PORTION);
+    const curvedValue =
+      PP_LINEAR_MAX +
+      Math.round((MAX_PP_GAIN - PP_LINEAR_MAX) * Math.pow(curvedProgress, PP_SLIDER_POWER));
+    return Math.min(MAX_PP_GAIN, curvedValue);
+  };
+
+  const ppGainToSlider = (value: number) => {
+    const clamped = Math.min(MAX_PP_GAIN, Math.max(0, value));
+    if (clamped <= PP_LINEAR_MAX) {
+      return (clamped / PP_LINEAR_MAX) * PP_LINEAR_PORTION;
+    }
+
+    const curved = (clamped - PP_LINEAR_MAX) / (MAX_PP_GAIN - PP_LINEAR_MAX);
+    const curvedSlider = Math.pow(curved, 1 / PP_SLIDER_POWER);
+    return PP_LINEAR_PORTION + curvedSlider * (1 - PP_LINEAR_PORTION);
+  };
+
+  const handlePpSliderInput = (evt: Event) => {
+    const sliderValue = parseFloat((evt.target as HTMLInputElement).value);
+    ppGained = sliderToPpGain(sliderValue);
+  };
+
+  const formatDaysLabel = (value: number) => {
+    const rounded = Math.max(0, Math.round(value));
+    return `${IntegerFormatter.format(rounded)} day${rounded === 1 ? '' : 's'}`;
+  };
+
+  const formatPpLabel = (value: number) => {
+    const rounded = Math.max(0, Math.round(value));
+    return `${IntegerFormatter.format(rounded)} pp`;
+  };
+
+  type ProjectionPoint = { day: number; rank: number };
+
+  const buildSimulationTrajectory = (
+    simulationConfig: SimulationConfig,
+    ppGainOverride = ppGained
+  ) => {
+    const { rank_to_decay, rank_to_density } = simulationConfig;
+
+    const totalDays = Math.max(0, Math.round(daysToSimulate));
+    const startingValue = Math.max(1, Math.round(currentRank));
+    const trajectory: ProjectionPoint[] = [{ day: 0, rank: startingValue }];
+
+    if (totalDays === 0) {
+      return trajectory;
+    }
+
+    let rank = startingValue;
+    const ppGain = Math.max(0, ppGainOverride);
+    const dailyPpGain = totalDays > 0 ? ppGain / totalDays : 0;
+
+    for (let i = 0; i < totalDays; i++) {
+      const naturalDecay = interpolateSorted(rank, rank_to_decay);
+      const density = interpolateSorted(rank, rank_to_density);
+
+      // density is ranks gained per pp
+      const climbVelocity = dailyPpGain * density;
+      const netChange = naturalDecay - climbVelocity;
+
+      rank += netChange;
+      if (rank < 1) {
+        rank = 1;
+      }
+
+      trajectory.push({ day: i + 1, rank: Math.round(rank) });
+    }
+
+    return trajectory;
+  };
+
+  const simulationTrajectory = $derived.by(() =>
+    buildSimulationTrajectory(simulationConfig, ppGained)
+  );
+  const baselineTrajectory = $derived.by(() => buildSimulationTrajectory(simulationConfig, 0));
+  const predictedRank = $derived.by(() => {
+    const lastPoint = simulationTrajectory[simulationTrajectory.length - 1];
+    return lastPoint ? lastPoint.rank : Math.round(Math.max(1, currentRank));
+  });
+  const rankDifference = $derived(currentRank - predictedRank);
+  const shouldShowBaseline = $derived(ppGained > 0);
+</script>
+
+<div class="simulator-section">
+  <h3>Rank Projection Simulator</h3>
+  <p class="description">Simulates a future rank based on historical decay rates.</p>
+  <p class="note">
+    Note that this simulation makes a lot of estimates and simplifications.<br />It does not
+    consider things like PP algorithm changes, inactive account purges, macro-level shifts in the
+    playerbase, etc.
+  </p>
+
+  <div class="inputs">
+    <div class="input-group">
+      <label for="current-rank">Current Rank</label>
+      <input id="current-rank" type="number" bind:value={currentRank} min="1" />
+    </div>
+
+    <div class="input-group slider-group">
+      <label for="days-simulate">Days to Simulate</label>
+      <div class="value-readout">{formatDaysLabel(daysToSimulate)}</div>
+      <input
+        id="days-simulate"
+        type="range"
+        min="0"
+        max="1"
+        step="0.001"
+        value={daysToSlider(daysToSimulate)}
+        oninput={handleDaysSliderInput}
+        aria-valuetext={formatDaysLabel(daysToSimulate)}
+      />
+      <div class="slider-scale">
+        <span>0d</span>
+        <span>~6mo</span>
+        <span>5y</span>
+      </div>
+    </div>
+
+    <div class="input-group slider-group">
+      <label for="pp-gained">PP Gained</label>
+      <div class="value-readout">{formatPpLabel(ppGained)}</div>
+      <input
+        id="pp-gained"
+        type="range"
+        min="0"
+        max="1"
+        step="0.001"
+        value={ppGainToSlider(ppGained)}
+        oninput={handlePpSliderInput}
+        aria-valuetext={formatPpLabel(ppGained)}
+      />
+      <div class="slider-scale">
+        <span>0</span>
+        <span>300</span>
+        <span>5k</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="result">
+    <span class="label">Predicted End Rank:</span>
+    <span class="value">#{IntegerFormatter.format(predictedRank)}</span>
+    <span
+      class="change"
+      class:positive={currentRank > predictedRank}
+      class:negative={currentRank < predictedRank}
+    >
+      ({rankDifference > 0 ? '+' : ''}{IntegerFormatter.format(rankDifference)})
+    </span>
+  </div>
+
+  <div class="projection-chart">
+    <h4>Projected Rank Trend</h4>
+    <p class="chart-description">Expected daily rank based on simulated PP gain and decay.</p>
+    <RankProjectionChart
+      projection={simulationTrajectory}
+      baseline={shouldShowBaseline ? baselineTrajectory : null}
+      startingRank={Math.max(1, Math.round(currentRank))}
+    />
+  </div>
+</div>
+
+<style>
+  .simulator-section {
+    padding: 8px 4px;
+    background: #fff;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+
+  .description {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .note {
+    margin-top: 0;
+    margin-bottom: 28px;
+    font-size: 0.8rem;
+    color: #999;
+  }
+
+  .inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #444;
+  }
+
+  input[type='number'] {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+  }
+
+  input[type='range'] {
+    width: 100%;
+    accent-color: #ff4081;
+  }
+
+  .slider-group {
+    gap: 0.35rem;
+  }
+
+  .value-readout {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .slider-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  .result {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+
+  .result .label {
+    font-weight: 500;
+    color: #444;
+  }
+
+  .result .value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #222;
+  }
+
+  .change {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .change.positive {
+    color: #4caf50;
+  }
+
+  .change.negative {
+    color: #f44336;
+  }
+
+  .projection-chart {
+    margin-top: 1.5rem;
+  }
+
+  .projection-chart h4 {
+    margin: 0 0 0.35rem 0;
+    font-size: 1rem;
+    color: #333;
+  }
+
+  .chart-description {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.85rem;
+    color: #666;
+  }
+</style>
