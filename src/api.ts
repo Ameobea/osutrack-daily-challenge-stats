@@ -131,6 +131,26 @@ export interface FetchHiscoresResponse {
   attrs_with_mods: Record<number, BeatmapAttrs>;
 }
 
+export interface OsutrackUserStats {
+  id: number;
+  count300: number;
+  count100: number;
+  count50: number;
+  playcount: number;
+  ranked_score: number;
+  total_score: number;
+  pp_rank: number;
+  level: number;
+  pp_raw: number;
+  accuracy: number;
+  count_rank_ss: number;
+  count_rank_s: number;
+  count_rank_a: number;
+  timestamp: string;
+  mode: number;
+  username: string;
+}
+
 export const fetchUsername = async (fetch: typeof window.fetch, userID: number): Promise<string> =>
   fetch(`${API_BASE_URL}/users/${userID}/username`).then(res => {
     if (res.status === 404) {
@@ -141,6 +161,13 @@ export const fetchUsername = async (fetch: typeof window.fetch, userID: number):
 
 export const fetchUserID = async (fetch: typeof window.fetch, username: string): Promise<number> =>
   fetch(`${API_BASE_URL}/users/${username}/id?mode=0`).then(res => res.json());
+
+export const fetchUserStats = async (
+  fetch: typeof window.fetch,
+  username: string,
+  mode: number
+): Promise<OsutrackUserStats> =>
+  fetch(`${API_BASE_URL}/users/${username}/stats?mode=${mode}`).then(res => res.json());
 
 export const fetchUserHiscores = async (
   fetch: typeof window.fetch,
@@ -455,10 +482,21 @@ const computeAnalyticsVerificationHash = async (events: AnalyticsEvent[]): Promi
   return hashHex;
 };
 
+const SubmittedOnceEvents = new Set<string>();
+
 export const submitAnalyticsEvent = async (
   event: AnalyticsEvent,
-  fetch: typeof window.fetch = window.fetch
+  fetch: typeof window.fetch = window.fetch,
+  once = false
 ): Promise<void> => {
+  if (once) {
+    const eventID = `${event.category}::${event.subcategory}`;
+    if (SubmittedOnceEvents.has(eventID)) {
+      return;
+    }
+    SubmittedOnceEvents.add(eventID);
+  }
+
   const verification = await computeAnalyticsVerificationHash([event]);
   const body = {
     event,
@@ -506,7 +544,6 @@ export const submitBatchAnalyticsEvents = async (
 };
 
 export interface SimulationConfig {
-  rank_to_pp: [number, number][]; // (u32, f32)[]
   rank_to_decay: [number, number][]; // (u32, f32)[]
   rank_to_density: [number, number][]; // (u32, f32)[]
 }

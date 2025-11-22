@@ -384,7 +384,6 @@
     border-radius: 0;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.15s ease;
     user-select: none;
   }
 
@@ -407,7 +406,7 @@
   }
 
   .helper-text {
-    color: #666;
+    color: #777;
     font-size: 14px;
     font-style: italic;
     margin-top: -4px;

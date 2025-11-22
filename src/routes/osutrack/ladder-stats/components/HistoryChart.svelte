@@ -64,7 +64,7 @@
       Math.max(padding, x + padding),
       container.clientWidth - tooltipWidth - padding
     );
-    const clampedY = Math.max(marginTop, y - tooltipHeight - padding);
+    const clampedY = Math.max(0, y - tooltipHeight - padding);
 
     tooltip.style('left', `${clampedX}px`).style('top', `${clampedY}px`);
   };

@@ -2,6 +2,7 @@
   import * as d3 from 'd3';
   import { onMount } from 'svelte';
   import type { AnalysisDataset } from '../types';
+  import { submitAnalyticsEvent } from '../../../../api';
 
   let {
     analysisData,
@@ -248,6 +249,14 @@
   };
 
   const handleDateChange = (evt: Event) => {
+    setTimeout(() =>
+      submitAnalyticsEvent(
+        { category: 'ladder_stats', subcategory: 'pp_distribution_date_slider_input' },
+        fetch,
+        true
+      )
+    );
+
     const target = evt.target as HTMLInputElement;
     dateIndex = parseInt(target.value, 10);
     if (analysisData) {
@@ -290,7 +299,7 @@
 <div class="distribution-section">
   <h3>PP Distribution</h3>
   <p class="description">
-    PP distribution across ranks for {selectedDate?.toLocaleDateString() ?? 'Loading...'}.
+    PP distribution across ranks for {selectedDate?.toLocaleDateString() ?? 'Loading...'}
   </p>
 
   <div class="controls">
@@ -316,13 +325,13 @@
 
   h3 {
     margin: 0 0 0.5rem 0;
-    font-size: 1.2rem;
+    font-size: 20px;
     color: #333;
   }
 
   .description {
     margin: 0 0 1rem 0;
-    font-size: 0.9rem;
+    font-size: 1.4rem;
     color: #666;
   }
 
@@ -347,7 +356,7 @@
     color: #fff;
     padding: 0.4rem 0.6rem;
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: 1.15rem;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
     opacity: 0;
     transition: opacity 120ms ease;

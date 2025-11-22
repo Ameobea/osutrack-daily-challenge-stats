@@ -3,11 +3,19 @@
   import { getHistoryForRank } from '../utils';
   import HistoryChart from './HistoryChart.svelte';
   import { IntegerFormatter } from '../../../../util';
+  import { fetchUserStats, submitAnalyticsEvent } from '../../../../api';
 
   let {
     analysisData,
     selectedRank = $bindable(),
-  }: { analysisData: AnalysisDataset | null; selectedRank: number } = $props();
+    mode,
+    changeMode,
+  }: {
+    analysisData: AnalysisDataset | null;
+    selectedRank: number;
+    mode: number;
+    changeMode: (newMode: number) => void;
+  } = $props();
 
   const MIN_RANK = 1;
   const MAX_RANK = 2_000_000;
@@ -33,6 +41,26 @@
     return Math.pow(norm, 1 / sliderGamma);
   };
 
+  const modeOptions = [
+    { value: 0, label: 'Standard' },
+    { value: 1, label: 'Taiko' },
+    { value: 2, label: 'Catch the Beat' },
+    { value: 3, label: 'Mania' },
+  ];
+
+  const selectedModeMeta = $derived.by(
+    () => modeOptions.find(option => option.value === mode) ?? modeOptions[0]
+  );
+
+  const handleModeChange = (evt: Event) => {
+    const target = evt.target as HTMLSelectElement;
+    const nextMode = Number(target.value);
+
+    if (Number.isNaN(nextMode) || nextMode === mode) return;
+
+    changeMode(nextMode);
+  };
+
   const { ppHistory, decayHistory } = $derived.by(() => {
     if (!analysisData || !selectedRank) {
       return { ppHistory: [], decayHistory: [] };
@@ -55,12 +83,63 @@
   });
 
   const handleRankChange = (evt: Event) => {
+    setTimeout(() =>
+      submitAnalyticsEvent(
+        { category: 'ladder_stats', subcategory: 'rank_slider_input' },
+        fetch,
+        true
+      )
+    );
+
     const target = evt.target as HTMLInputElement;
     const sliderValue = parseFloat(target.value);
     selectedRank = sliderToRank(sliderValue);
   };
 
   const formatRankValue = (value: number) => IntegerFormatter.format(Math.round(value));
+
+  const clampRank = (value: number) => Math.min(MAX_RANK, Math.max(MIN_RANK, value));
+
+  let rankInputValue = $state(formatRankValue(selectedRank));
+  let isRankInputFocused = $state(false);
+
+  $effect(() => {
+    if (!isRankInputFocused) {
+      rankInputValue = formatRankValue(selectedRank);
+    }
+  });
+
+  const handleRankInputFocus = () => {
+    isRankInputFocused = true;
+    rankInputValue = String(selectedRank);
+  };
+
+  const handleRankInputBlur = () => {
+    isRankInputFocused = false;
+  };
+
+  const handleRankInput = (evt: Event) => {
+    setTimeout(() =>
+      submitAnalyticsEvent(
+        { category: 'ladder_stats', subcategory: 'rank_input_entry' },
+        fetch,
+        true
+      )
+    );
+
+    const target = evt.target as HTMLInputElement;
+    const numericValue = target.value.replace(/[^0-9]/g, '');
+
+    if (!numericValue) {
+      rankInputValue = '';
+      return;
+    }
+
+    const parsed = clampRank(Number(numericValue));
+    rankInputValue = String(parsed);
+    selectedRank = parsed;
+  };
+
   const formatPpTick = (value: number) => IntegerFormatter.format(Math.round(value));
 
   const computeSeriesStats = (series: [Date, number][]) => {
@@ -110,32 +189,134 @@
       decayFormatter: (value: number) => formatNumber(value, decayDecimals),
     };
   });
+
+  type LookupStatus = 'idle' | 'loading' | 'success' | 'error';
+
+  let usernameQuery = $state('');
+  let usernameStatus = $state<LookupStatus>('idle');
+  let usernameMessage = $state<string | null>(null);
+
+  const fetchUserRank = async (username: string): Promise<number | null> =>
+    fetchUserStats(fetch, username, mode).then(res => res.pp_rank);
+
+  const handleUsernameLookup = async () => {
+    setTimeout(() =>
+      submitAnalyticsEvent(
+        { category: 'ladder_stats', subcategory: 'username_lookup_submit' },
+        fetch,
+        true
+      )
+    );
+
+    const trimmed = usernameQuery.trim();
+
+    if (!trimmed) {
+      usernameStatus = 'error';
+      usernameMessage = 'Enter a username to look up their rank.';
+      return;
+    }
+
+    usernameStatus = 'loading';
+
+    try {
+      usernameMessage = null;
+      const rank = await fetchUserRank(trimmed);
+
+      if (rank) {
+        selectedRank = clampRank(rank);
+        usernameStatus = 'success';
+      } else {
+        usernameStatus = 'idle';
+      }
+    } catch (err) {
+      console.error('Username lookup failed', err);
+      usernameStatus = 'error';
+      usernameMessage = 'Failed to stats for that username';
+    }
+  };
 </script>
 
 <div class="history-section">
+  <div class="mode-selector">
+    <p class="mode-description">Showing stats for</p>
+    <label for="mode-select" class="visually-hidden">Select osu! game mode</label>
+    <div class="mode-select-wrapper">
+      <select
+        id="mode-select"
+        class="mode-select"
+        value={mode}
+        onchange={handleModeChange}
+        aria-label="Select osu! game mode"
+      >
+        {#each modeOptions as option}
+          <option value={option.value} selected={option.value === mode}>
+            {option.label}
+          </option>
+        {/each}
+      </select>
+      <span class="mode-select-caret" aria-hidden="true"></span>
+    </div>
+  </div>
   <div class="controls">
-    <label for="rank-slider" class="rank-display">
-      Rank
-      <span class="rank-number">{formatRankValue(selectedRank)}</span>
-    </label>
-    <input
-      id="rank-slider"
-      type="range"
-      min="0"
-      max="1"
-      step="0.001"
-      value={rankToSlider(selectedRank)}
-      oninput={handleRankChange}
-      class="slider"
-      aria-valuetext={`Rank ${formatRankValue(selectedRank)}`}
-    />
+    <div class="rank-selector">
+      <label for="rank-input" class="rank-label">Select Rank</label>
+      <input
+        id="rank-input"
+        class="rank-input"
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        value={rankInputValue}
+        onfocus={handleRankInputFocus}
+        onblur={handleRankInputBlur}
+        oninput={handleRankInput}
+        aria-label="Select rank by typing"
+      />
+      <input
+        id="rank-slider"
+        type="range"
+        min="0"
+        max="1"
+        step="0.001"
+        value={rankToSlider(selectedRank)}
+        oninput={handleRankChange}
+        class="slider"
+        aria-label="Select rank with slider"
+        aria-valuetext={`Rank ${formatRankValue(selectedRank)}`}
+      />
+    </div>
+
+    <div class="username-selector">
+      <p class="username-title">Or lookup by username</p>
+      <form
+        class="username-form"
+        onsubmit={evt => {
+          evt.preventDefault();
+          handleUsernameLookup();
+        }}
+      >
+        <input
+          type="text"
+          class="username-input"
+          placeholder="osu! username"
+          aria-label="osu! username"
+          bind:value={usernameQuery}
+        />
+        <button type="submit" class="lookup-button" disabled={usernameStatus === 'loading'}>
+          {usernameStatus === 'loading' ? 'Loading' : 'Lookup rank'}
+        </button>
+      </form>
+      {#if usernameMessage}
+        <p class={`lookup-message ${usernameStatus}`}>{usernameMessage}</p>
+      {/if}
+    </div>
   </div>
 
   <div class="charts">
     <div class="chart-wrapper">
       <h3>PP History</h3>
       <p class="description">
-        Performance points required to reach rank #{formatRankValue(selectedRank)} over time.
+        PP required to reach rank #{formatRankValue(selectedRank)} over time
       </p>
       <HistoryChart
         data={ppHistory}
@@ -149,7 +330,7 @@
     <div class="chart-wrapper">
       <h3>Decay History</h3>
       <p class="description">
-        Average rank decay per day for rank #{formatRankValue(selectedRank)} over time.
+        Average rank decay per day for rank #{formatRankValue(selectedRank)} over time
       </p>
       <HistoryChart
         data={decayHistory}
@@ -175,30 +356,240 @@
   .controls {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    align-items: center;
-    text-align: center;
+    gap: 1.25rem;
+    width: 100%;
   }
 
-  .rank-display {
+  .mode-selector {
+    min-width: calc(min(80vw, 400px));
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border: 1px solid #eee;
+    padding: 1.5rem 1rem;
+    text-align: left;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 768px) {
+    .mode-selector {
+      min-width: 95vw;
+    }
+  }
+
+  .mode-description {
+    margin: 0;
+    font-size: 1.55rem;
+    color: #222;
+    font-weight: 500;
+    text-align: center;
+    line-height: 8px;
+    margin-bottom: 5px;
+  }
+
+  .mode-select {
+    width: 100%;
+    padding: 0.65rem 2.75rem 0.65rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 2px solid #ff80ab;
+    font-size: 1.4rem;
+    background: #fff;
+    font-weight: 600;
+    color: #111;
+    appearance: none;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .mode-select-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .mode-select-caret {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    border-right: 3px solid #ff4081;
+    border-bottom: 3px solid #ff4081;
+    pointer-events: none;
+  }
+
+  .mode-select:focus {
+    outline: none;
+    border-color: #ff4081;
+    box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.2);
+  }
+
+  .mode-select:hover {
+    border-color: #ff4081;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .rank-selector,
+  .username-selector {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: left;
+  }
+
+  .rank-label {
     font-size: clamp(1.25rem, 1.25rem + 1vw, 2rem);
     font-weight: 700;
     color: #111;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+    text-align: center;
+    margin-bottom: 0;
   }
 
-  .rank-number {
+  .rank-input {
     font-size: clamp(1.5rem, 2rem + 1.5vw, 2.25rem);
     font-weight: 800;
     color: #ff4081;
+    border: 2px solid #ff80ab;
+    border-radius: 0.75rem;
+    padding: 0.45rem 1.4rem;
+    text-align: center;
+    background: #fff5fa;
+  }
+
+  .rank-input:focus {
+    outline: none;
+    border-color: #ff4081;
+    box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.2);
+    background: #fff;
+  }
+
+  .helper-text {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #666;
   }
 
   .slider {
     width: 100%;
+    margin-top: 8px;
+    appearance: none;
+    height: 8px;
+    border-radius: 4px;
+    background: #e8e8e8;
+    cursor: pointer;
+  }
+
+  .slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ff4081;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .username-selector {
+    background: #fff7fb;
+    border: 1px solid #ffd4e6;
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+  .username-title {
+    margin: 0;
+    font-weight: 700;
+    color: #111;
+    font-size: 1.7rem;
+  }
+
+  .username-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .username-input {
+    flex: 1 1 160px;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 1px solid #ccc;
+    font-size: 1.4rem;
+  }
+
+  .username-input:focus {
+    outline: none;
+    border-color: #ff4081;
+    box-shadow: 0 0 0 2px rgba(255, 64, 129, 0.2);
+  }
+
+  .lookup-button {
+    background: #ff4081;
+    color: #fff;
+    border: none;
+    border-radius: 0.65rem;
+    padding: 0.65rem 1.25rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lookup-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .lookup-message {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .lookup-message.idle {
+    color: #555;
+  }
+
+  .lookup-message.success {
+    color: #1b873f;
+  }
+
+  .lookup-message.error {
+    color: #d32f2f;
+  }
+
+  .lookup-message.loading {
+    color: #555;
+  }
+
+  @media (min-width: 768px) {
+    .controls {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    .rank-selector,
+    .username-selector,
+    .mode-selector {
+      width: 100%;
+    }
   }
 
   .charts {
@@ -214,13 +605,14 @@
 
   h3 {
     margin: 0 0 0.5rem 0;
-    font-size: 1.2rem;
+    font-size: 2rem;
     color: #333;
+    font-weight: bold;
   }
 
   .description {
     margin: 0 0 1rem 0;
-    font-size: 0.9rem;
+    font-size: 1.4rem;
     color: #666;
   }
 </style>

@@ -1,14 +1,38 @@
 <script lang="ts">
-  import type { SimulationConfig } from '../../../../api';
+  import { submitAnalyticsEvent, type SimulationConfig } from '../../../../api';
   import { interpolateSorted } from '../utils';
-  import { IntegerFormatter } from '../../../../util';
+  import { FloatFormatter, IntegerFormatter } from '../../../../util';
   import RankProjectionChart from './RankProjectionChart.svelte';
+  import type { AnalysisDataset } from '../types';
 
-  let { simulationConfig }: { simulationConfig: SimulationConfig } = $props();
+  let {
+    simulationConfig,
+    selectedRank = $bindable(),
+    analysisData,
+  }: {
+    simulationConfig: SimulationConfig;
+    selectedRank: number;
+    analysisData: AnalysisDataset | null;
+  } = $props();
 
-  let currentRank = $state(10000);
+  let localSelectedRank = $state(selectedRank);
+  $effect(() => {
+    localSelectedRank = selectedRank;
+  });
   let daysToSimulate = $state(60);
   let ppGained = $state(50);
+
+  // extract the last column from the matrix for mapping rank to pp
+  let rankToPP: [number, number][] | null = $derived.by(() => {
+    if (!analysisData) {
+      return null;
+    }
+    const { pp_matrix, buckets, dates } = analysisData;
+    const dateIndex = dates.length - 1;
+    const result = pp_matrix.slice(dateIndex * buckets.length, (dateIndex + 1) * buckets.length);
+
+    return Array.from(buckets, (rank, i) => [rank, result[i]]);
+  });
 
   const MAX_SIM_DAYS = 5 * 365;
   const MIDPOINT_DAYS = 180;
@@ -39,6 +63,14 @@
   };
 
   const handleDaysSliderInput = (evt: Event) => {
+    setTimeout(() =>
+      submitAnalyticsEvent(
+        { category: 'ladder_stats', subcategory: 'simulate_days_slider_input' },
+        fetch,
+        true
+      )
+    );
+
     const sliderValue = parseFloat((evt.target as HTMLInputElement).value);
     daysToSimulate = sliderToDays(sliderValue);
   };
@@ -77,6 +109,14 @@
   };
 
   const handlePpSliderInput = (evt: Event) => {
+    setTimeout(() =>
+      submitAnalyticsEvent(
+        { category: 'ladder_stats', subcategory: 'simulate_pp_gain_slider_input' },
+        fetch,
+        true
+      )
+    );
+
     const sliderValue = parseFloat((evt.target as HTMLInputElement).value);
     ppGained = sliderToPpGain(sliderValue);
   };
@@ -130,6 +170,18 @@
     return trajectory;
   };
 
+  const currentRank = $derived.by(() => {
+    if (localSelectedRank > 0 && localSelectedRank <= 2_000_000 && !isNaN(localSelectedRank)) {
+      return localSelectedRank;
+    }
+    return selectedRank;
+  });
+  const currentPP = $derived.by(() => {
+    if (!rankToPP) {
+      return 0;
+    }
+    return interpolateSorted(currentRank, rankToPP);
+  });
   const simulationTrajectory = $derived.by(() =>
     buildSimulationTrajectory(simulationConfig, ppGained)
   );
@@ -154,7 +206,21 @@
   <div class="inputs">
     <div class="input-group">
       <label for="current-rank">Current Rank</label>
-      <input id="current-rank" type="number" bind:value={currentRank} min="1" />
+      <input
+        id="current-rank"
+        type="number"
+        value={localSelectedRank}
+        oninput={evt => {
+          const newValue = parseInt((evt.target as HTMLInputElement).value, 10);
+          if (!isNaN(newValue)) {
+            localSelectedRank = newValue;
+          }
+          if (!isNaN(newValue) && newValue >= 1 && newValue <= 2_000_000) {
+            selectedRank = newValue;
+          }
+        }}
+        min="1"
+      />
     </div>
 
     <div class="input-group slider-group">
@@ -199,20 +265,35 @@
   </div>
 
   <div class="result">
-    <span class="label">Predicted End Rank:</span>
-    <span class="value">#{IntegerFormatter.format(predictedRank)}</span>
-    <span
-      class="change"
-      class:positive={currentRank > predictedRank}
-      class:negative={currentRank < predictedRank}
-    >
-      ({rankDifference > 0 ? '+' : ''}{IntegerFormatter.format(rankDifference)})
-    </span>
+    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+      <div>
+        <span class="label">Predicted Rank Change:</span>
+        <span class="value">
+          #{IntegerFormatter.format(currentRank)} -> {IntegerFormatter.format(predictedRank)}
+        </span>
+        <span
+          class="change"
+          class:positive={currentRank > predictedRank}
+          class:negative={currentRank < predictedRank}
+        >
+          ({rankDifference >= 0 ? '+' : ''}{IntegerFormatter.format(rankDifference)})
+        </span>
+      </div>
+
+      <div>
+        <span class="label">Predicted PP Change:</span>
+        <span class="value">
+          {FloatFormatter.format(currentPP)} -> {FloatFormatter.format(currentPP + ppGained)}
+        </span>
+        <span class="change" class:positive={ppGained > 0} class:negative={ppGained < 0}>
+          ({ppGained >= 0 ? '+' : ''}{FloatFormatter.format(ppGained)})
+        </span>
+      </div>
+    </div>
   </div>
 
   <div class="projection-chart">
     <h4>Projected Rank Trend</h4>
-    <p class="chart-description">Expected daily rank based on simulated PP gain and decay.</p>
     <RankProjectionChart
       projection={simulationTrajectory}
       baseline={shouldShowBaseline ? baselineTrajectory : null}
@@ -229,26 +310,27 @@
 
   h3 {
     margin: 0 0 0.5rem 0;
-    font-size: 1.2rem;
+    font-size: 20px;
     color: #333;
+    font-weight: bold;
   }
 
   .description {
     margin-bottom: 8px;
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 1.4rem;
+    color: #555;
   }
 
   .note {
     margin-top: 0;
     margin-bottom: 28px;
-    font-size: 0.8rem;
-    color: #999;
+    font-size: 1.34rem;
+    color: #777;
   }
 
   .inputs {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
   }
@@ -260,7 +342,7 @@
   }
 
   label {
-    font-size: 0.9rem;
+    font-size: 1.6rem;
     font-weight: 500;
     color: #444;
   }
@@ -268,7 +350,7 @@
   input[type='number'] {
     padding: 0.5rem;
     border: 1px solid #ddd;
-    font-size: 1rem;
+    font-size: 1.5rem;
   }
 
   input[type='range'] {
@@ -281,7 +363,7 @@
   }
 
   .value-readout {
-    font-size: 0.9rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: #333;
   }
@@ -289,8 +371,8 @@
   .slider-scale {
     display: flex;
     justify-content: space-between;
-    font-size: 0.75rem;
-    color: #888;
+    font-size: 1.2rem;
+    color: #777;
   }
 
   .result {
@@ -304,10 +386,12 @@
   .result .label {
     font-weight: 500;
     color: #444;
+    font-size: 1.6rem;
+    padding-left: 0;
   }
 
   .result .value {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: bold;
     color: #222;
   }
@@ -315,6 +399,7 @@
   .change {
     font-size: 1rem;
     font-weight: 500;
+    font-size: 1.4rem;
   }
 
   .change.positive {
@@ -331,13 +416,8 @@
 
   .projection-chart h4 {
     margin: 0 0 0.35rem 0;
-    font-size: 1rem;
+    font-size: 1.4rem;
     color: #333;
-  }
-
-  .chart-description {
-    margin: 0 0 0.75rem 0;
-    font-size: 0.85rem;
-    color: #666;
+    font-weight: bold;
   }
 </style>

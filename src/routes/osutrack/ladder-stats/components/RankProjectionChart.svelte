@@ -404,7 +404,7 @@
     margin-top: 0.5rem;
     display: flex;
     gap: 1.25rem;
-    font-size: 0.8rem;
+    font-size: 1rem;
     color: #444;
   }
 
@@ -481,7 +481,7 @@
     display: flex;
     justify-content: space-between;
     gap: 0.75rem;
-    font-size: 0.8rem;
+    font-size: 1rem;
   }
 
   :global(.chart-tooltip .tooltip-line + .tooltip-line) {

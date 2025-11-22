@@ -9,6 +9,7 @@
   import type { AnalysisDataset } from './types';
   import * as DecompressorModule from './data-decompressor/pkg/data_decompressor';
   import wasmPath from './data-decompressor/pkg/data_decompressor_bg.wasm?url';
+  import { goto } from '$app/navigation';
 
   let { simulationConfig, mode }: { simulationConfig: SimulationConfig; mode: number } = $props();
 
@@ -58,21 +59,34 @@
         // TODO: show error message to user
       });
   });
+
+  const changeMode = (newMode: number) => {
+    if (newMode === mode) {
+      return;
+    }
+    // goto(`/osutrack/ladder-stats?mode=${newMode}`);
+    // doesn't work for whatever reason, and I don't care
+    window.location.href = `/osutrack/ladder-stats?mode=${newMode}`;
+  };
 </script>
 
 <div class="root">
   <header>
-    <h1>osu! Ranked Ladder Stats</h1>
+    <h1>osu! Leaderboard Stats + Trends</h1>
+    <p class="description">
+      This page displays analysis of long-term trends in the osu! ranked leaderboard. The data used
+      to generate it is derived from historical osu!track data and is updated daily.
+    </p>
   </header>
 
   <main>
     <section class="section">
-      <HistorySection {analysisData} {selectedRank} />
+      <HistorySection {analysisData} bind:selectedRank {mode} {changeMode} />
     </section>
 
     <section class="grid-section section">
-      <RankSimulator {simulationConfig} />
-      <DistributionChart {analysisData} {selectedDate} />
+      <RankSimulator {simulationConfig} {analysisData} bind:selectedRank />
+      <DistributionChart {analysisData} bind:selectedDate />
     </section>
   </main>
 </div>
@@ -93,9 +107,27 @@
   }
 
   h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    margin-top: 8px;
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  .description {
+    text-align: left;
+    margin-bottom: 4px;
+    color: #666;
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 600px) {
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    .description {
+      font-size: 1.4rem;
+      margin-top: 12px;
+    }
   }
 
   main {
@@ -106,7 +138,7 @@
   }
 
   .section {
-    width: min(100%, 900px);
+    width: 100%;
   }
 
   .grid-section {
