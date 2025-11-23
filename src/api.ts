@@ -546,6 +546,7 @@ export const submitBatchAnalyticsEvents = async (
 export interface SimulationConfig {
   rank_to_decay: [number, number][]; // (u32, f32)[]
   rank_to_density: [number, number][]; // (u32, f32)[]
+  rank_to_pp: [number, number][]; // (u32, f32)[]
 }
 
 export const getLadderSimulationConfig = async (

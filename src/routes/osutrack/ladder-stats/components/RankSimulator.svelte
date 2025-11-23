@@ -22,42 +22,25 @@
   let daysToSimulate = $state(60);
   let ppGained = $state(50);
 
-  // extract the last column from the matrix for mapping rank to pp
-  let rankToPP: [number, number][] | null = $derived.by(() => {
-    if (!analysisData) {
-      return null;
-    }
-    const { pp_matrix, buckets, dates } = analysisData;
-    const dateIndex = dates.length - 1;
-    const result = pp_matrix.slice(dateIndex * buckets.length, (dateIndex + 1) * buckets.length);
-
-    return Array.from(buckets, (rank, i) => [rank, result[i]]);
-  });
-
+  const MIN_SIM_DAYS = 1;
   const MAX_SIM_DAYS = 5 * 365;
   const MIDPOINT_DAYS = 180;
-  const LOG_MIN_DAYS = Math.log10(1);
-  const LOG_MAX_DAYS = Math.log10(MAX_SIM_DAYS + 1);
+  const LOG_MIN_DAYS = Math.log10(MIN_SIM_DAYS);
+  const LOG_MAX_DAYS = Math.log10(MAX_SIM_DAYS);
   const daysLogRange = LOG_MAX_DAYS - LOG_MIN_DAYS;
-  const pivotNormDays = (Math.log10(MIDPOINT_DAYS + 1) - LOG_MIN_DAYS) / daysLogRange;
+  const pivotNormDays = (Math.log10(MIDPOINT_DAYS) - LOG_MIN_DAYS) / daysLogRange;
   const daySliderGamma = Math.log(pivotNormDays) / Math.log(0.5);
 
   const sliderToDays = (value: number) => {
-    if (value <= 0) {
-      return 0;
-    }
     const scaled = Math.pow(value, daySliderGamma);
     const logDays = LOG_MIN_DAYS + scaled * daysLogRange;
-    const days = Math.round(10 ** logDays - 1);
-    return Math.min(MAX_SIM_DAYS, Math.max(0, days));
+    const days = Math.round(10 ** logDays);
+    return Math.min(MAX_SIM_DAYS, Math.max(MIN_SIM_DAYS, days));
   };
 
   const daysToSlider = (days: number) => {
-    if (days <= 0) {
-      return 0;
-    }
-    const clamped = Math.min(MAX_SIM_DAYS, Math.max(0, days));
-    const logValue = Math.log10(clamped + 1);
+    const clamped = Math.min(MAX_SIM_DAYS, Math.max(MIN_SIM_DAYS, days));
+    const logValue = Math.log10(clamped);
     const norm = (logValue - LOG_MIN_DAYS) / daysLogRange;
     return Math.pow(norm, 1 / daySliderGamma);
   };
@@ -79,6 +62,7 @@
   const PP_LINEAR_MAX = 300;
   const PP_LINEAR_PORTION = 0.55;
   const PP_SLIDER_POWER = 2.25;
+  const SIMULATION_OVERSAMPLE_FACTOR = 50;
 
   const sliderToPpGain = (value: number) => {
     const clamped = Math.min(1, Math.max(0, value));
@@ -137,7 +121,7 @@
     simulationConfig: SimulationConfig,
     ppGainOverride = ppGained
   ) => {
-    const { rank_to_decay, rank_to_density } = simulationConfig;
+    const { rank_to_decay, rank_to_density, rank_to_pp } = simulationConfig;
 
     const totalDays = Math.max(0, Math.round(daysToSimulate));
     const startingValue = Math.max(1, Math.round(currentRank));
@@ -150,18 +134,22 @@
     let rank = startingValue;
     const ppGain = Math.max(0, ppGainOverride);
     const dailyPpGain = totalDays > 0 ? ppGain / totalDays : 0;
+    const stepPpGain = dailyPpGain / SIMULATION_OVERSAMPLE_FACTOR;
 
     for (let i = 0; i < totalDays; i++) {
-      const naturalDecay = interpolateSorted(rank, rank_to_decay);
-      const density = interpolateSorted(rank, rank_to_density);
+      for (let j = 0; j < SIMULATION_OVERSAMPLE_FACTOR; j++) {
+        const naturalDecay = interpolateSorted(rank, rank_to_decay);
+        const density = interpolateSorted(rank, rank_to_density);
 
-      // density is ranks gained per pp
-      const climbVelocity = dailyPpGain * density;
-      const netChange = naturalDecay - climbVelocity;
+        // density is ranks gained per pp
+        const climbVelocity = stepPpGain * density;
+        // naturalDecay is per day, so we need to scale it down
+        const netChange = naturalDecay / SIMULATION_OVERSAMPLE_FACTOR - climbVelocity;
 
-      rank += netChange;
-      if (rank < 1) {
-        rank = 1;
+        rank += netChange;
+        if (rank < 1) {
+          rank = 1;
+        }
       }
 
       trajectory.push({ day: i + 1, rank: Math.round(rank) });
@@ -177,10 +165,10 @@
     return selectedRank;
   });
   const currentPP = $derived.by(() => {
-    if (!rankToPP) {
+    if (!simulationConfig.rank_to_pp) {
       return 0;
     }
-    return interpolateSorted(currentRank, rankToPP);
+    return interpolateSorted(currentRank, simulationConfig.rank_to_pp);
   });
   const simulationTrajectory = $derived.by(() =>
     buildSimulationTrajectory(simulationConfig, ppGained)
@@ -237,7 +225,7 @@
         aria-valuetext={formatDaysLabel(daysToSimulate)}
       />
       <div class="slider-scale">
-        <span>0d</span>
+        <span>1d</span>
         <span>~6mo</span>
         <span>5y</span>
       </div>
