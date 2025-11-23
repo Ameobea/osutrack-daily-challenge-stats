@@ -64,12 +64,12 @@
             <li><a href="/osutrack/bestplays/mania">Mania</a></li>
           </ul>
         </li>
-        <li class="pull-left" style="width: 128px">
+        <li class="pull-left" style="width: 132px">
           <a href="/osutrack/b/discord/">
             <span class="glyphicon glyphicon-send"></span> Discord Bots
           </a>
         </li>
-        <li class="pull-left" style="width: 97px">
+        <li class="pull-left" style="width: 100px">
           <a href="/osutrack/updater/index.php">
             <span class="glyphicon glyphicon-comment"></span> IRC Bot
           </a>

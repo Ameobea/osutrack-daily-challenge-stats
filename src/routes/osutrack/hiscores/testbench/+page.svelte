@@ -54,7 +54,7 @@
   }
 
   :global(*) {
-    font-family: 'Oxygen', sans-serif;
+    font-family: 'Source Sans Pro', 'Oxygen', sans-serif;
     color: rgb(85, 85, 85);
   }
 </style>

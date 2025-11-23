@@ -208,9 +208,12 @@
     </thead>
     <tbody>
       {#each sortedHiscores as hiscore (hiscore.id)}
+        {@const endedAt = new Date(hiscore.ended_at)}
+        {@const isRecent = now.getTime() - endedAt.getTime() < 2 * 24 * 60 * 60 * 1000}
         <tr
           onclick={() => setSelectedScore(hiscore)}
           class:selected={hiscore.id === selectedScore?.id}
+          class:recent={isRecent}
         >
           <td>
             <a href={`https://osu.ppy.sh/scores/${hiscore.id}`} target="_blank">{hiscore.index}</a>
@@ -275,28 +278,22 @@
             <td>
               {hiscore.beatmap.bpm * (hiscore.attrs_with_mods?.clock_rate ?? 1)}
             </td>
+            <td>
+              {FloatFormatter.format(hiscore.attrs_with_mods?.cs ?? hiscore.beatmap.diff_size)}
+            </td>
+            <td>
+              {FloatFormatter.format(hiscore.attrs_with_mods?.ar ?? hiscore.beatmap.diff_approach)}
+            </td>
+            <td>
+              {FloatFormatter.format(hiscore.attrs_with_mods?.od ?? hiscore.beatmap.diff_overall)}
+            </td>
             <td
-              >{FloatFormatter.format(hiscore.attrs_with_mods?.cs ?? hiscore.beatmap.diff_size)}</td
-            >
-            <td
-              >{FloatFormatter.format(
-                hiscore.attrs_with_mods?.ar ?? hiscore.beatmap.diff_approach
-              )}</td
-            >
-            <td
-              >{FloatFormatter.format(
-                hiscore.attrs_with_mods?.od ?? hiscore.beatmap.diff_overall
-              )}</td
-            >
-            <td
-              >{FloatFormatter.format(
-                hiscore.attrs_with_mods?.hp ?? hiscore.beatmap.diff_drain
-              )}</td
-            >
+              >{FloatFormatter.format(hiscore.attrs_with_mods?.hp ?? hiscore.beatmap.diff_drain)}
+            </td>
           {/if}
           <td>
             <span class="date-diff" title={hiscore.ended_at}>
-              {formatDateDiff(new Date(hiscore.ended_at), now)}
+              {formatDateDiff(endedAt, now)}
             </span>
           </td>
           <td>
@@ -450,5 +447,15 @@
 
   a {
     color: rgb(85, 85, 85);
+  }
+
+  tr.recent > td,
+  tr.recent > th {
+    background-color: rgba(80, 247, 95, 0.24) !important;
+  }
+
+  tr.recent:hover > td,
+  tr.recent:hover > th {
+    background-color: rgba(80, 247, 95, 0.5) !important;
   }
 </style>

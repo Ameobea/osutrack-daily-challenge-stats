@@ -9,13 +9,14 @@
   import type { AnalysisDataset } from './types';
   import * as DecompressorModule from './data-decompressor/pkg/data_decompressor';
   import wasmPath from './data-decompressor/pkg/data_decompressor_bg.wasm?url';
-  import { goto } from '$app/navigation';
 
   let { simulationConfig, mode }: { simulationConfig: SimulationConfig; mode: number } = $props();
 
   let analysisData = $state.raw<AnalysisDataset | null>(null);
   let selectedDate = $state<Date | null>(null);
-  let selectedRank = $state<number>(50_000);
+  let selectedRank = $state<number>(
+    ({ [0]: 50_000, [1]: 10_000, [2]: 5_000, [3]: 25_000 } as Record<number, number>)[mode]
+  );
   // TODO: add an input box for users to specify their username and have their rank looked up and populated
 
   onMount(() => {

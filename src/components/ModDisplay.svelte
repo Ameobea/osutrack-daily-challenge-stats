@@ -149,6 +149,12 @@
       label: 'Max Size Combo Count',
       formatValue: (v: number) => `${v}`,
     },
+    hidden_combo_count: {
+      label: 'Hidden Combo Count',
+      formatValue: (v: number) => `${v}`,
+    },
+    retries: { label: 'Retries' },
+    attraction_strength: { label: 'Attraction Strength' },
   };
 
   const formatMod = (

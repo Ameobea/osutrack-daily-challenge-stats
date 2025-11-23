@@ -18,8 +18,15 @@
   } = $props();
 
   const MIN_RANK = 1;
-  const MAX_RANK = 2_000_000;
-  const PIVOT_RANK = 50_000;
+  let MAX_RANK = $derived.by(
+    () =>
+      (({ [0]: 2_000_000, [1]: 250_000, [2]: 100_000, [3]: 1_000_000 }) as Record<number, number>)[
+        mode
+      ]
+  );
+  let PIVOT_RANK = $derived.by(
+    () => (({ [0]: 50_000, [1]: 10_000, [2]: 5_000, [3]: 25_000 }) as Record<number, number>)[mode]
+  );
   const LOG_MIN = Math.log10(MIN_RANK);
   const LOG_MAX = Math.log10(MAX_RANK);
   const logRange = LOG_MAX - LOG_MIN;

@@ -39,11 +39,6 @@
     margin-right: auto;
   }
 
-  :global(body, table) {
-    font-family: 'Oxygen', sans-serif;
-    color: rgb(85, 85, 85);
-  }
-
   .content {
     max-width: 1270px;
     margin: 0 auto;
