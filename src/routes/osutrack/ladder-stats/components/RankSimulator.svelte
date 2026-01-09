@@ -269,7 +269,7 @@
       </div>
 
       <div>
-        <span class="label">Predicted PP Change:</span>
+        <span class="label">Given PP Change:</span>
         <span class="value">
           {FloatFormatter.format(currentPP)} -> {FloatFormatter.format(currentPP + ppGained)}
         </span>

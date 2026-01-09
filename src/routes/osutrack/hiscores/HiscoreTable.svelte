@@ -449,13 +449,11 @@
     color: rgb(85, 85, 85);
   }
 
-  tr.recent > td,
-  tr.recent > th {
+  tr.recent > td {
     background-color: rgba(80, 247, 95, 0.24) !important;
   }
 
-  tr.recent:hover > td,
-  tr.recent:hover > th {
+  tr.recent:hover > td {
     background-color: rgba(80, 247, 95, 0.5) !important;
   }
 </style>
