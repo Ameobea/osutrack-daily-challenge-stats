@@ -1,10 +1,8 @@
 <script lang="ts">
-  import SvelteSeo from 'svelte-seo';
-
-  import type { PageData } from '../$types';
   import { fetchDailyChallengeTotalScoreRankings } from '../../../../api';
   import RankingsPage from './RankingsPage.svelte';
   import { queryParam } from 'sveltekit-search-params';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -14,7 +12,7 @@
       rankings: rankings.map(rank => ({ ...rank, value: rank.total_score })),
     }));
 
-  let pageNumber = queryParam<number>('page', {
+  const pageNumber = queryParam<number>('page', {
     encode: v => v.toString(),
     decode: (v): number => (typeof v === 'string' ? +v : 1),
   });
@@ -22,7 +20,12 @@
   const description = 'Global rankings for the osu! daily challenge';
 </script>
 
-<SvelteSeo {title} {description} openGraph={{ title, description }} />
+<svelte:head>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+</svelte:head>
 
 <div style="display: flex; justify-content: center; text-align:center">
   <h1>Daily Challenge Total Score Rankings</h1>

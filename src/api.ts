@@ -309,6 +309,7 @@ export interface DailyChallengeUserStats {
   best_placement_score: BestPlacement | null;
   best_placement_pp: BestPlacement | null;
   most_used_mods: [Mod | null, number][];
+  most_used_mod_combo: Mod[];
 }
 
 export interface TotalScoreStats {
@@ -560,3 +561,74 @@ export const getCompressedLadderStatsData = async (
   fetch: typeof window.fetch = window.fetch
 ): Promise<ArrayBuffer> =>
   fetch(`${API_BASE_URL}/analysis/dataset?mode=${mode}`).then(res => res.arrayBuffer());
+
+// ---- daily challenge stat embeds ----
+
+export type StatKey =
+  | 'participation'
+  | 'current_daily_streak'
+  | 'best_daily_streak'
+  | 'current_weekly_streak'
+  | 'best_weekly_streak'
+  | 'global_rank'
+  | 'total_score'
+  | 'best_placement_rank'
+  | 'best_placement_percentile'
+  | 'best_placement_score'
+  | 'best_placement_pp'
+  | 'top50_count'
+  | 'top10_count'
+  | 'top1_count'
+  | 'first_place_count'
+  | 'top1_streak'
+  | 'top10_streak'
+  | 'top50_streak'
+  | 'most_used_mods';
+
+// `none` | `calendar` | `score_histogram` | `time_of_day_histogram`, or `{ hero_stat: StatKey }`.
+// matches the backend `Feature` serde shape (snake_case unit variants + a single tagged variant).
+export type EmbedFeature =
+  | 'none'
+  | 'calendar'
+  | 'score_histogram'
+  | 'time_of_day_histogram'
+  | { hero_stat: StatKey };
+
+export interface EmbedColors {
+  background: string;
+  text: string;
+  secondary_text: string;
+  border: string;
+}
+
+export interface EmbedConfig {
+  stats: StatKey[];
+  colors: EmbedColors;
+  rainbow_full_streak: boolean;
+  show_avatar: boolean;
+  show_header: boolean;
+  scale: number | null;
+  feature: EmbedFeature;
+}
+
+export const createEmbed = (
+  fetch: typeof window.fetch,
+  userID: number,
+  config: EmbedConfig
+): Promise<{ hash: string }> =>
+  fetch(`${API_BASE_URL}/daily-challenge/embed`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userID, config }),
+  }).then(res => {
+    if (!res.ok) {
+      throw new Error(`Failed to create embed: ${res.status}`);
+    }
+    return res.json();
+  });
+
+export const embedPngUrl = (userID: number, hash: string): string =>
+  `${API_BASE_URL}/daily-challenge/embed/${userID}/${hash}.png`;
+
+export const embedSvgUrl = (userID: number, hash: string): string =>
+  `${API_BASE_URL}/daily-challenge/embed/${userID}/${hash}.svg`;

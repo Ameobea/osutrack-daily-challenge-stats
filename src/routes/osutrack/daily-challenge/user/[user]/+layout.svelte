@@ -2,25 +2,30 @@
   enum UserTab {
     Summary = 0,
     Calendar = 1,
+    Embed = 2,
   }
 
   const getActiveTab = (url: URL) => {
     const pathname = url.pathname;
     if (pathname.includes('/calendar')) {
       return UserTab.Calendar;
+    } else if (pathname.includes('/embed')) {
+      return UserTab.Embed;
     } else {
       return UserTab.Summary;
     }
   };
 
-  const getTabPath = (userID: string, tab: UserTab) => {
+  const getTabRoute = (tab: UserTab) => {
     switch (tab) {
       case UserTab.Summary:
-        return `/osutrack/daily-challenge/user/${userID}`;
+        return '/osutrack/daily-challenge/user/[user]';
       case UserTab.Calendar:
-        return `/osutrack/daily-challenge/user/${userID}/calendar`;
+        return '/osutrack/daily-challenge/user/[user]/calendar';
+      case UserTab.Embed:
+        return '/osutrack/daily-challenge/user/[user]/embed';
       default:
-        return `/osutrack/daily-challenge/user/${userID}`;
+        return '/osutrack/daily-challenge/user/[user]';
     }
   };
 </script>
@@ -28,6 +33,7 @@
 <script lang="ts">
   import { Tabs, Tab, TileGroup, RadioTile } from 'carbon-components-svelte';
   import { goto, preloadData } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { page } from '$app/stores';
 
   import type { LayoutData } from './$types';
@@ -37,7 +43,9 @@
   $: username = data.username;
 
   $: activeTab = getActiveTab($page.url);
-  $: userID = $page.params.user;
+  $: userID = $page.params.user ?? '';
+
+  const getTabPath = (tab: UserTab) => resolve(getTabRoute(tab), { user: userID });
 
   const handleTabSelected = (newSelectedTab: UserTab) => {
     if (!userID) {
@@ -49,6 +57,7 @@
       {
         [UserTab.Summary]: 'summary',
         [UserTab.Calendar]: 'calendar',
+        [UserTab.Embed]: 'embed',
       } as Record<UserTab, string>
     )[newSelectedTab];
     setTimeout(() =>
@@ -62,17 +71,17 @@
     //
     // If so, we want to avoid overwriting any query params or hash that might have been added.
     const url = new URL($page.url);
-    if (url.pathname === getTabPath(userID, newSelectedTab)) {
+    if (url.pathname === getTabPath(newSelectedTab)) {
       return;
     }
 
-    goto(getTabPath(userID, newSelectedTab));
+    goto(resolve(getTabRoute(newSelectedTab), { user: userID }));
   };
 
   let innerWidth = 550;
 
   const mkTabPrefetcher = (tab: UserTab) => () => {
-    const path = getTabPath(userID, tab);
+    const path = resolve(getTabRoute(tab), { user: userID });
     return preloadData(path);
   };
 </script>
@@ -100,6 +109,9 @@
           on:mouseenter={mkTabPrefetcher(UserTab.Calendar)}
           value={UserTab.Calendar.toString()}>Calendar</RadioTile
         >
+        <RadioTile on:mouseenter={mkTabPrefetcher(UserTab.Embed)} value={UserTab.Embed.toString()}
+          >User Card</RadioTile
+        >
       </TileGroup>
     </div>
   {/if}
@@ -113,8 +125,9 @@
       on:change={evt => handleTabSelected(evt.detail)}
       style="margin-left: auto; margin-right: auto; background-color: #111;"
     >
-      <Tab href={getTabPath(userID, UserTab.Summary)} label="Summary" />
-      <Tab href={getTabPath(userID, UserTab.Calendar)} label="Calendar" />
+      <Tab href={getTabPath(UserTab.Summary)} label="Summary" />
+      <Tab href={getTabPath(UserTab.Calendar)} label="Calendar" />
+      <Tab href={getTabPath(UserTab.Embed)} label="User Card" />
     </Tabs>
   {/if}
   <slot />

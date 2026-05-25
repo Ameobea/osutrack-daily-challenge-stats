@@ -1,6 +1,4 @@
 <script lang="ts">
-  import SvelteSeo from 'svelte-seo';
-
   import { renderHistogram } from '../../../../components/histogram';
   import { DateFormatter, IntegerFormatter, TotalScoreFormatter } from '../../../../util';
   import type { PageData } from './$types';
@@ -128,18 +126,19 @@
       xAxisTickCount: innerWidth < 600 ? 6 : 10,
     });
   }
+
+  const title = 'osu!track Daily Challenge Stats';
+  const description = 'Maps, mappers, trends, and other stats for the osu! daily challenge';
 </script>
 
 <svelte:window bind:innerWidth />
 
-<SvelteSeo
-  title="osu!track Daily Challenge Stats"
-  description="Maps, mappers, trends, and other stats for the osu! daily challenge"
-  openGraph={{
-    title: 'osu!track Daily Challenge Stats',
-    description: 'Maps, mappers, trends, and other stats for the osu! daily challenge',
-  }}
-/>
+<svelte:head>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+</svelte:head>
 
 <div class="root">
   <h1>Daily Challenge Stats</h1>
@@ -211,7 +210,7 @@
     <div>
       <div class="title">Most Featured Mappers</div>
       <div class="inline-list top-mappers-list">
-        {#each stats.map_stats.top_mappers as { map_ids, user_id, username }, i}
+        {#each stats.map_stats.top_mappers as { map_ids, user_id, username }, i (user_id)}
           {@const style =
             i == 0 &&
             stats.map_stats.top_mappers.length > 1 &&
@@ -233,7 +232,7 @@
         {#each stats.map_stats.top_required_mods as [mods, count]}
           <div class="mods-list">
             {#if mods.length}
-              {#each mods as mod}
+              {#each mods as mod (mod)}
                 <ModDisplay {mod} />
               {/each}
             {:else}

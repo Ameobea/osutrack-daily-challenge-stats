@@ -2332,11 +2332,6 @@ sade@^1.7.4, sade@^1.8.1:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-schema-dts@^1.1.5:
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/schema-dts/-/schema-dts-1.1.5.tgz#9237725d305bac3469f02b292a035107595dc324"
-  integrity sha512-RJr9EaCmsLzBX2NDiO5Z3ux2BVosNZN5jo0gWgsyKvxKIUL5R3swNvoorulAeL9kLB0iTSX7V6aokhla2m7xbg==
-
 semver@^7.6.0, semver@^7.6.3:
   version "7.7.3"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.3.tgz#4b5f4143d007633a8dc671cd0a6ef9147b8bb946"
@@ -2432,13 +2427,6 @@ svelte-hmr@^0.16.0:
   version "0.16.0"
   resolved "https://registry.yarnpkg.com/svelte-hmr/-/svelte-hmr-0.16.0.tgz#9f345b7d1c1662f1613747ed7e82507e376c1716"
   integrity sha512-Gyc7cOS3VJzLlfj7wKS0ZnzDVdv3Pn2IuVeJPk9m2skfhcu5bq3wtIZyQGggr7/Iim5rH5cncyQft/kRLupcnA==
-
-svelte-seo@^1.6.1:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/svelte-seo/-/svelte-seo-1.7.1.tgz#e166a821374424c65028b405eafd5ed4ee6219f8"
-  integrity sha512-/FjqRoNxFiSXiENdEXiC1JERwnxq8sr19IEF3utk1KoxDJ7AVn/7EhAAnm98q2ZoSW4vV+rx0JmfLeRHyRpNNA==
-  dependencies:
-    schema-dts "^1.1.5"
 
 svelte@^5.43.5:
   version "5.43.5"

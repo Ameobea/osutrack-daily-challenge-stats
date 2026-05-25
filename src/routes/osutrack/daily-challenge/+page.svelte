@@ -1,8 +1,8 @@
 <script lang="ts">
   import { InlineLoading } from 'carbon-components-svelte';
   import { Search } from 'carbon-icons-svelte';
-  import SvelteSeo from 'svelte-seo';
   import { goto, preloadData } from '$app/navigation';
+  import { resolve } from '$app/paths';
 
   import { fetchUserID } from '../../../api';
   import { logError } from '../../../sentry';
@@ -31,7 +31,7 @@
     }
 
     try {
-      await goto(`/osutrack/daily-challenge/user/${userID}`);
+      await goto(resolve(`/osutrack/daily-challenge/user/${userID}`));
     } catch (err) {
       logError('Error navigating to user page', err);
       error = 'Error loading user page.  Double check the username and try again.';
@@ -51,18 +51,19 @@
       return;
     }
 
-    preloadData(`/osutrack/daily-challenge/user/${searchValue}`);
+    preloadData(resolve(`/osutrack/daily-challenge/user/${searchValue}`));
   };
+
+  const title = 'osu!track Daily Challenge Stats';
+  const description = 'Player stats and global rankings for the osu! daily challenge';
 </script>
 
-<SvelteSeo
-  title="osu!track Daily Challenge Stats"
-  description="Player stats and global rankings for the osu! daily challenge"
-  openGraph={{
-    title: 'osu!track Daily Challenge Stats',
-    description: 'Player stats and global rankings for the osu! daily challenge',
-  }}
-/>
+<svelte:head>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+</svelte:head>
 
 <div class="root">
   <h1>osu!track Daily Challenge Stats</h1>
@@ -101,8 +102,8 @@
     {/if}
 
     <div class="links">
-      <a href="/osutrack/daily-challenge/rankings">View Global Rankings</a>
-      <a href="/osutrack/daily-challenge/stats">View Global Stats</a>
+      <a href={resolve('/osutrack/daily-challenge/rankings')}>View Global Rankings</a>
+      <a href={resolve('/osutrack/daily-challenge/stats')}>View Global Stats</a>
     </div>
   </div>
 

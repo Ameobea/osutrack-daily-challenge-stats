@@ -1,6 +1,5 @@
 <script lang="ts">
   import { queryParam } from 'sveltekit-search-params';
-  import SvelteSeo from 'svelte-seo';
 
   import Calendar from './Calendar.svelte';
   import type { PageData } from './$types';
@@ -17,7 +16,7 @@
     {} as Record<number, DailyChallengeHistoryEntry>
   );
 
-  let selectedDayID = queryParam('day', {
+  const selectedDayID = queryParam('day', {
     decode: (value: string | null) => (value ? +value : null),
     encode: (value: number | null) => (value ? value.toString() : undefined),
   });
@@ -40,7 +39,12 @@
   $: description = metadata.description;
 </script>
 
-<SvelteSeo {title} {description} openGraph={{ title, description }} />
+<svelte:head>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+</svelte:head>
 
 <div class="root">
   <Calendar
