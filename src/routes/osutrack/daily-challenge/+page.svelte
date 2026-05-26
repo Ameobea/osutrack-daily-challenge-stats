@@ -31,7 +31,7 @@
     }
 
     try {
-      await goto(resolve(`/osutrack/daily-challenge/user/${userID}`));
+      await goto(resolve('/osutrack/daily-challenge/user/[user]', { user: String(userID) }));
     } catch (err) {
       logError('Error navigating to user page', err);
       error = 'Error loading user page.  Double check the username and try again.';
@@ -46,12 +46,17 @@
     }
   };
 
-  const prefetchProfile = () => {
+  const prefetchProfile = async () => {
     if (!searchValue) {
       return;
     }
 
-    preloadData(resolve(`/osutrack/daily-challenge/user/${searchValue}`));
+    try {
+      const userID = await fetchUserID(fetch, searchValue);
+      if (typeof userID === 'number' && !Number.isNaN(userID)) {
+        preloadData(resolve('/osutrack/daily-challenge/user/[user]', { user: String(userID) }));
+      }
+    } catch {}
   };
 
   const title = 'osu!track Daily Challenge Stats';
