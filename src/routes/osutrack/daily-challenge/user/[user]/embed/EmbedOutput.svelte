@@ -3,10 +3,17 @@
 
   export let pngUrl: string;
   export let svgUrl: string;
+  export let userID: number;
+
+  $: profileUrl = `https://ameobea.me/osutrack/daily-challenge/user/${userID}`;
 
   $: snippets = [
     { id: 'png', label: 'Direct image (PNG)', value: pngUrl },
-    { id: 'bbcode', label: 'osu! profile (BBCode)', value: `[img]${pngUrl}[/img]` },
+    {
+      id: 'bbcode',
+      label: 'osu! profile (BBCode)',
+      value: `[url=${profileUrl}][img]${pngUrl}[/img][/url]`,
+    },
     { id: 'svg', label: 'Direct image (SVG)', value: svgUrl },
   ];
 
@@ -16,7 +23,9 @@
   const flagCopied = (id: string) => {
     copiedID = id;
     clearTimeout(copyTimer);
-    copyTimer = setTimeout(() => (copiedID = null), 1500);
+    copyTimer = setTimeout(() => {
+      copiedID = null;
+    }, 1500);
   };
 
   const copyText = async (id: string, text: string) => {
@@ -30,9 +39,10 @@
 </script>
 
 <div class="output">
-  <h4>Share &amp; Embed</h4>
+  <h4>Share or Embed</h4>
+  <p class="hint">Paste the direct image on your osu! profile, in Discord, or anywhere else.</p>
   <p class="hint">
-    Paste the direct image on your osu! profile (BBCode), in Discord, or anywhere else.
+    The image is automatically re-generated daily along with all other daily challenge stats.
   </p>
   <div class="rows">
     {#each snippets as s (s.id)}

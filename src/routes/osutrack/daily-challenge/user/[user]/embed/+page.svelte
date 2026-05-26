@@ -83,7 +83,7 @@
     <div class="sticky">
       <EmbedPreview {svgUrl} {loading} {error} />
       {#if hash && !error && !loading}
-        <EmbedOutput {pngUrl} svgUrl={svgUrl ?? ''} />
+        <EmbedOutput {pngUrl} svgUrl={svgUrl ?? ''} {userID} />
       {/if}
     </div>
   </div>
