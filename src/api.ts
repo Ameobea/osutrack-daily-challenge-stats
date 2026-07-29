@@ -3,6 +3,7 @@ import { API_BASE_URL, ANALYTICS_SALT } from './conf';
 export interface AnalyticsEvent {
   category: string;
   subcategory: string;
+  payload?: unknown;
 }
 
 export interface DailyChallengeHistoryEntry {
@@ -485,11 +486,72 @@ const computeAnalyticsVerificationHash = async (events: AnalyticsEvent[]): Promi
 
 const SubmittedOnceEvents = new Set<string>();
 
-export const submitAnalyticsEvent = async (
+let analyticsSessionID: string | null = null;
+const getSessionID = (): string => {
+  if (analyticsSessionID) {
+    return analyticsSessionID;
+  }
+  const gen = () => {
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    return Array.from(bytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  };
+  try {
+    analyticsSessionID = sessionStorage.getItem('analyticsSessionID');
+    if (!analyticsSessionID) {
+      analyticsSessionID = gen();
+      sessionStorage.setItem('analyticsSessionID', analyticsSessionID);
+    }
+  } catch (_err) {
+    analyticsSessionID = gen();
+  }
+  return analyticsSessionID;
+};
+
+// one queue per project since the batch endpoint takes a single project per request
+const analyticsQueues = new Map<string, AnalyticsEvent[]>();
+let analyticsFlushTimer: ReturnType<typeof setTimeout> | null = null;
+
+const flushAnalyticsEvents = async () => {
+  const batches = [...analyticsQueues.entries()];
+  analyticsQueues.clear();
+  for (const [project, events] of batches) {
+    try {
+      const verification = await computeAnalyticsVerificationHash(events);
+      await fetch(`${API_BASE_URL}/a/z`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events, verification, project, session_id: getSessionID() }),
+        keepalive: true,
+      });
+    } catch (_err) {
+      // analytics must never break the app
+    }
+  }
+};
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => {
+    if (analyticsQueues.size) {
+      void flushAnalyticsEvents();
+    }
+  });
+}
+
+export const submitAnalyticsEvent = (
   event: AnalyticsEvent,
-  fetch: typeof window.fetch = window.fetch,
+  project = 'osu-daily-challenge',
   once = false
-): Promise<void> => {
+): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  if (window.location.href.includes('http://localhost')) {
+    console.debug('[analytics]', project, event);
+    return;
+  }
+
   if (once) {
     const eventID = `${event.category}::${event.subcategory}`;
     if (SubmittedOnceEvents.has(eventID)) {
@@ -498,52 +560,36 @@ export const submitAnalyticsEvent = async (
     SubmittedOnceEvents.add(eventID);
   }
 
-  const verification = await computeAnalyticsVerificationHash([event]);
-  const body = {
-    event,
-    verification,
-  };
-
-  const response = await fetch(`${API_BASE_URL}/a/v`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Failed to submit analytics event:', errorText);
-    throw new Error(`Failed to submit analytics event: ${response.statusText}`);
+  let queue = analyticsQueues.get(project);
+  if (!queue) {
+    queue = [];
+    analyticsQueues.set(project, queue);
+  }
+  queue.push(event);
+  if (analyticsFlushTimer === null) {
+    analyticsFlushTimer = setTimeout(() => {
+      analyticsFlushTimer = null;
+      void flushAnalyticsEvents();
+    }, 800);
   }
 };
 
-export const submitBatchAnalyticsEvents = async (
-  events: AnalyticsEvent[],
-  fetch: typeof window.fetch = window.fetch
-): Promise<void> => {
-  const verification = await computeAnalyticsVerificationHash(events);
-  const body = {
-    events,
-    verification,
-  };
-
-  const response = await fetch(`${API_BASE_URL}/a/z`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Failed to submit batch analytics events:', errorText);
-    throw new Error(`Failed to submit batch analytics events: ${response.statusText}`);
+export const getEmbedPage = (): string => {
+  if (typeof window === 'undefined') {
+    return 'ssr';
   }
+  const p = window.location.pathname;
+  if (p === '/' || p === '') {
+    return 'homepage';
+  }
+  if (p.startsWith('/osutrack/hiscores')) {
+    return 'standalone';
+  }
+  if (p.startsWith('/osutrack/')) {
+    return 'osutrack_user';
+  }
+  return 'other';
 };
-
 export interface SimulationConfig {
   rank_to_decay: [number, number][]; // (u32, f32)[]
   rank_to_density: [number, number][]; // (u32, f32)[]

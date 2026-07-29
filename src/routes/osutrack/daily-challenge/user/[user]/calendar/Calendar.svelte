@@ -29,12 +29,11 @@
   <button
     disabled={curYear <= 2024 && curMonth <= 6}
     on:click={() => {
-      setTimeout(() =>
-        submitAnalyticsEvent({
-          category: 'daily_challenge',
-          subcategory: 'calendar_month_navigate_previous',
-        })
-      );
+      submitAnalyticsEvent({
+        category: 'daily_challenge',
+        subcategory: 'calendar_month_navigate_previous',
+        payload: { month: curMonth, year: curYear },
+      });
 
       curMonth -= 1;
       if (curMonth < 0) {
@@ -54,12 +53,11 @@
     disabled={curYear >= latestChallengeDate.getFullYear() &&
       curMonth >= latestChallengeDate.getMonth()}
     on:click={() => {
-      setTimeout(() =>
-        submitAnalyticsEvent({
-          category: 'daily_challenge',
-          subcategory: 'calendar_month_navigate_next',
-        })
-      );
+      submitAnalyticsEvent({
+        category: 'daily_challenge',
+        subcategory: 'calendar_month_navigate_next',
+        payload: { month: curMonth, year: curYear },
+      });
 
       curMonth += 1;
       if (curMonth > 11) {
@@ -83,12 +81,11 @@
         {day}
         isSelected={dayID === selectedDayID}
         setIsSelected={() => {
-          setTimeout(() =>
-            submitAnalyticsEvent({
-              category: 'daily_challenge',
-              subcategory: 'calendar_day_select',
-            })
-          );
+          submitAnalyticsEvent({
+            category: 'daily_challenge',
+            subcategory: 'calendar_day_select',
+            payload: { day_id: dayID },
+          });
           setSelectedDayID(dayID);
         }}
         {latestChallengeDayID}

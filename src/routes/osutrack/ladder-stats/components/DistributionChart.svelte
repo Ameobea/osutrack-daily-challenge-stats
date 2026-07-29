@@ -252,7 +252,7 @@
     setTimeout(() =>
       submitAnalyticsEvent(
         { category: 'ladder_stats', subcategory: 'pp_distribution_date_slider_input' },
-        fetch,
+        'osu-daily-challenge',
         true
       )
     );

@@ -49,7 +49,7 @@
     setTimeout(() =>
       submitAnalyticsEvent(
         { category: 'ladder_stats', subcategory: 'simulate_days_slider_input' },
-        fetch,
+        'osu-daily-challenge',
         true
       )
     );
@@ -96,7 +96,7 @@
     setTimeout(() =>
       submitAnalyticsEvent(
         { category: 'ladder_stats', subcategory: 'simulate_pp_gain_slider_input' },
-        fetch,
+        'osu-daily-challenge',
         true
       )
     );

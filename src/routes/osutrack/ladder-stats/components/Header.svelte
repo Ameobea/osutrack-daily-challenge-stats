@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { submitAnalyticsEvent } from '../../../../api';
 </script>
 
 <nav class="navbar navbar-default" style="margin-bottom: 0;">
@@ -33,6 +34,11 @@
               '3': 'mania',
             }[modeSelect.value] ?? 0;
           if (userInput.trim() !== '') {
+            submitAnalyticsEvent({
+              category: 'ladder_stats',
+              subcategory: 'username_search_redirect',
+              payload: { username: userInput.trim(), mode: modeSelect.value },
+            });
             window.location.href = `/osutrack/user/${encodeURIComponent(userInput)}${mode !== null ? `/${mode}` : ''}`;
           }
         }}

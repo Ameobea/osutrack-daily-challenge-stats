@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { submitAnalyticsEvent } from '../../../api';
+  import { getEmbedPage, submitAnalyticsEvent } from '../../../api';
   import type { PageData } from './$types';
   import type { RichHiscore } from './+page.server';
   import HiscoreTable from './HiscoreTable.svelte';
@@ -13,14 +13,23 @@
   let filteredHiscores = $state<RichHiscore[] | null>(null);
   let showStatsExplorer = $state(false);
 
+  const embedPage = getEmbedPage();
+
   const setSelectedScore = (score: RichHiscore | null) => {
     selectedScore = score;
     if (score !== null) {
       isScoreDetailsCollapsed = false;
     }
 
-    setTimeout(() =>
-      submitAnalyticsEvent({ category: 'hiscores_table', subcategory: 'select_score' })
+    submitAnalyticsEvent(
+      {
+        category: 'hiscores_table',
+        subcategory: 'select_score',
+        payload: score
+          ? { beatmap_id: score.beatmap.beatmap_id, score_id: score.id, mode: data.mode, page: embedPage }
+          : { deselect: true, mode: data.mode, page: embedPage },
+      },
+      'osutrack'
     );
   };
 
@@ -30,11 +39,13 @@
       selectedScore = null;
     }
 
-    setTimeout(() =>
-      submitAnalyticsEvent({
+    submitAnalyticsEvent(
+      {
         category: 'hiscores_table',
         subcategory: 'toggle_score_details_collapsed',
-      })
+        payload: { collapsed: isScoreDetailsCollapsed, mode: data.mode, page: embedPage },
+      },
+      'osutrack'
     );
   };
 
@@ -47,8 +58,13 @@
       isScoreDetailsCollapsed = true;
     }
 
-    setTimeout(() =>
-      submitAnalyticsEvent({ category: 'hiscores_table', subcategory: 'toggle_stats_explorer' })
+    submitAnalyticsEvent(
+      {
+        category: 'hiscores_table',
+        subcategory: 'toggle_stats_explorer',
+        payload: { open: showStatsExplorer, mode: data.mode, page: embedPage },
+      },
+      'osutrack'
     );
   };
 

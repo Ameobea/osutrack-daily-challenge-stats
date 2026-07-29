@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
-  import { getCompressedLadderStatsData, type SimulationConfig } from '../../../api';
+  import { getCompressedLadderStatsData, submitAnalyticsEvent, type SimulationConfig } from '../../../api';
   import HistorySection from './components/HistorySection.svelte';
   import RankSimulator from './components/RankSimulator.svelte';
   import DistributionChart from './components/DistributionChart.svelte';
@@ -65,6 +65,11 @@
     if (newMode === mode) {
       return;
     }
+    submitAnalyticsEvent({
+      category: 'ladder_stats',
+      subcategory: 'mode_change',
+      payload: { from_mode: mode, to_mode: newMode },
+    });
     // goto(`/osutrack/ladder-stats?mode=${newMode}`);
     // doesn't work for whatever reason, and I don't care
     window.location.href = `/osutrack/ladder-stats?mode=${newMode}`;

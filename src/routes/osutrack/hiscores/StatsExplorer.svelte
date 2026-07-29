@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { RichHiscore } from './+page.server';
   import { renderHistogram } from '../../../components/histogram';
-  import { submitAnalyticsEvent, type Histogram } from '../../../api';
+  import { getEmbedPage, submitAnalyticsEvent, type Histogram } from '../../../api';
 
   let {
     hiscores,
@@ -48,6 +48,8 @@
     xAxisTickFormat?: (value: number) => string;
     xAxisTickCount?: number;
   }
+
+  const embedPage = getEmbedPage();
 
   const hasFlashlightPP = hiscores.some(h => !!h.perf?.earned.pp_flashlight);
 
@@ -208,11 +210,13 @@
       hasInteracted = true;
     }
 
-    setTimeout(() =>
-      submitAnalyticsEvent({
+    submitAnalyticsEvent(
+      {
         category: 'hiscores_table',
         subcategory: 'change_stats_explorer_stat',
-      })
+        payload: { stat, mode, page: embedPage },
+      },
+      'osutrack'
     );
   };
 
@@ -293,11 +297,19 @@
         hasInteracted = true;
       }
 
-      setTimeout(() =>
-        submitAnalyticsEvent({
+      submitAnalyticsEvent(
+        {
           category: 'hiscores_table',
           subcategory: 'select_stats_explorer_bucket',
-        })
+          payload: {
+            stat: selectedStat,
+            bucket_index: bucketIx,
+            deselect: selectedBucket === bucketIx,
+            mode,
+            page: embedPage,
+          },
+        },
+        'osutrack'
       );
 
       if (selectedBucket === bucketIx) {
@@ -318,6 +330,20 @@
         );
       });
       setFilteredHiscores(scoresInBucket);
+      submitAnalyticsEvent(
+        {
+          category: 'hiscores_table',
+          subcategory: 'stats_explorer_filter_applied',
+          payload: {
+            stat: selectedStat,
+            bucket_index: bucketIx,
+            filtered_count: scoresInBucket.length,
+            mode,
+            page: embedPage,
+          },
+        },
+        'osutrack'
+      );
 
       clearSelectedBucketClass();
       const clickedBar = event.currentTarget;

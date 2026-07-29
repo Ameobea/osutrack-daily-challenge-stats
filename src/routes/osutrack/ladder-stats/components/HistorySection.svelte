@@ -93,7 +93,7 @@
     setTimeout(() =>
       submitAnalyticsEvent(
         { category: 'ladder_stats', subcategory: 'rank_slider_input' },
-        fetch,
+        'osu-daily-challenge',
         true
       )
     );
@@ -129,7 +129,7 @@
     setTimeout(() =>
       submitAnalyticsEvent(
         { category: 'ladder_stats', subcategory: 'rank_input_entry' },
-        fetch,
+        'osu-daily-challenge',
         true
       )
     );
@@ -210,7 +210,7 @@
     setTimeout(() =>
       submitAnalyticsEvent(
         { category: 'ladder_stats', subcategory: 'username_lookup_submit' },
-        fetch,
+        'osu-daily-challenge',
         true
       )
     );

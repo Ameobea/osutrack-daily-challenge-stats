@@ -60,12 +60,11 @@
         [UserTab.Embed]: 'embed',
       } as Record<UserTab, string>
     )[newSelectedTab];
-    setTimeout(() =>
-      submitAnalyticsEvent({
-        category: 'daily_challenge',
-        subcategory: `user_page_tab_select_${newSelectedTabName}`,
-      })
-    );
+    submitAnalyticsEvent({
+      category: 'daily_challenge',
+      subcategory: 'user_page_tab_select',
+      payload: { tab: newSelectedTabName },
+    });
 
     // It's possible that we change tabs using a link in the page or other means.
     //

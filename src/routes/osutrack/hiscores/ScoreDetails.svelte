@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getEmbedPage, submitAnalyticsEvent } from '../../../api';
   import ModDisplay from '../../../components/ModDisplay.svelte';
   import { IntegerFormatter } from '../../../util';
   import type { RichHiscore } from './+page.server';
@@ -37,7 +38,23 @@
           />
           <div class="beatmap-details">
             <div>
-              <a href={`https://osu.ppy.sh/b/${selectedScore.beatmap.beatmap_id}`} target="_blank">
+              <a
+                href={`https://osu.ppy.sh/b/${selectedScore.beatmap.beatmap_id}`}
+                target="_blank"
+                onclick={() =>
+                  submitAnalyticsEvent(
+                    {
+                      category: 'hiscores_table',
+                      subcategory: 'open_beatmap_link',
+                      payload: {
+                        target: 'beatmap_details',
+                        beatmap_id: selectedScore!.beatmap.beatmap_id,
+                        page: getEmbedPage(),
+                      },
+                    },
+                    'osutrack'
+                  )}
+              >
                 View Beatmap on osu!
               </a>
             </div>
@@ -47,7 +64,23 @@
             </div>
             <div>
               <b>Mapper:</b>
-              <a href={`https://osu.ppy.sh/users/${selectedScore.beatmap.creator}`} target="_blank">
+              <a
+                href={`https://osu.ppy.sh/users/${selectedScore.beatmap.creator}`}
+                target="_blank"
+                onclick={() =>
+                  submitAnalyticsEvent(
+                    {
+                      category: 'hiscores_table',
+                      subcategory: 'open_beatmap_link',
+                      payload: {
+                        target: 'mapper',
+                        beatmap_id: selectedScore!.beatmap.beatmap_id,
+                        page: getEmbedPage(),
+                      },
+                    },
+                    'osutrack'
+                  )}
+              >
                 {selectedScore.beatmap.creator}
               </a>
             </div>

@@ -6,7 +6,7 @@
   import { FloatFormatter } from '../../../util';
   import type { RichHiscore } from './+page.server';
   import { browser } from '$app/environment';
-  import { submitAnalyticsEvent } from '../../../api';
+  import { getEmbedPage, submitAnalyticsEvent } from '../../../api';
 
   let {
     hiscores,
@@ -24,6 +24,8 @@
 
   const hasFlashlightPP = $derived(hiscores.some(h => !!h.perf?.earned.pp_flashlight));
   const showPerSkillStats = $derived(mode === 0);
+
+  const embedPage = getEmbedPage();
 
   type SortColumn =
     | 'index'
@@ -102,8 +104,13 @@
       sortAscending = false;
     }
 
-    setTimeout(() =>
-      submitAnalyticsEvent({ category: 'hiscore_table', subcategory: 'sort_column' })
+    submitAnalyticsEvent(
+      {
+        category: 'hiscores_table',
+        subcategory: 'sort_column',
+        payload: { column: sortColumn, direction: sortAscending ? 'asc' : 'desc', mode, page: embedPage },
+      },
+      'osutrack'
     );
   };
 
@@ -216,10 +223,34 @@
           class:recent={isRecent}
         >
           <td>
-            <a href={`https://osu.ppy.sh/scores/${hiscore.id}`} target="_blank">{hiscore.index}</a>
+            <a
+              href={`https://osu.ppy.sh/scores/${hiscore.id}`}
+              target="_blank"
+              onclick={() =>
+                submitAnalyticsEvent(
+                  {
+                    category: 'hiscores_table',
+                    subcategory: 'open_beatmap_link',
+                    payload: { target: 'score', beatmap_id: hiscore.beatmap.beatmap_id, mode, page: embedPage },
+                  },
+                  'osutrack'
+                )}>{hiscore.index}</a
+            >
           </td>
           <td class="title-column" title={`${hiscore.beatmap.title} [${hiscore.beatmap.version}]`}>
-            <a href={`https://osu.ppy.sh/b/${hiscore.beatmap.beatmap_id}`} target="_blank">
+            <a
+              href={`https://osu.ppy.sh/b/${hiscore.beatmap.beatmap_id}`}
+              target="_blank"
+              onclick={() =>
+                submitAnalyticsEvent(
+                  {
+                    category: 'hiscores_table',
+                    subcategory: 'open_beatmap_link',
+                    payload: { target: 'beatmap', beatmap_id: hiscore.beatmap.beatmap_id, mode, page: embedPage },
+                  },
+                  'osutrack'
+                )}
+            >
               {hiscore.beatmap.title}
               <span class="beatmap-version">[{hiscore.beatmap.version}]</span>
             </a>

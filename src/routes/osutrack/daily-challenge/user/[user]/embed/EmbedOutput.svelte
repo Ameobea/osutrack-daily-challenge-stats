@@ -1,6 +1,8 @@
 <script lang="ts">
   import Copy from 'carbon-icons-svelte/lib/Copy.svelte';
 
+  import { submitAnalyticsEvent } from '../../../../../../api';
+
   export let pngUrl: string;
   export let svgUrl: string;
   export let userID: number;
@@ -32,6 +34,11 @@
     try {
       await navigator.clipboard.writeText(text);
       flagCopied(id);
+      submitAnalyticsEvent({
+        category: 'daily_challenge',
+        subcategory: 'embed_snippet_copy',
+        payload: { snippet: id },
+      });
     } catch (err) {
       console.error('clipboard write failed', err);
     }
