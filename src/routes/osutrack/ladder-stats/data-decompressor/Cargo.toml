@@ -8,5 +8,5 @@ edition = "2024"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-pco = "0.4.7"
+pco = "1.0"
 wasm-bindgen = "=0.2.92"
