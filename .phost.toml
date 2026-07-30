@@ -1,0 +1,13 @@
+[app]
+name = "osutrack-daily-challenge"
+
+[build]
+commands = ["just docker-build"]
+image = "osu-dc-track:latest"
+
+[deploy]
+health = { url = "http://localhost:4520/osutrack/daily-challenge" }
+
+[deploy.run]
+ports = ["4520:4520"]
+env = { PORT = "4520" }
